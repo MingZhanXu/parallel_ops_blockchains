@@ -15,3 +15,11 @@ pub fn rand_points(start: f64, end: f64, num: usize) -> Vec<Point> {
     }
     points.into_iter().collect()
 }
+pub fn rand_center(max: usize, num: usize) -> Vec<usize> {
+    let mut center: HashSet<usize> = HashSet::new();
+    while center.len() < num {
+        let n = rand::thread_rng().gen_range(0..max as usize);
+        center.insert(n);
+    }
+    center.into_iter().collect()
+}
