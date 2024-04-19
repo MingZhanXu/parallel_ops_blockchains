@@ -1,5 +1,8 @@
 // use std::process::Output;
-use std::ops::Add;
+use std::{
+    ops::Add,
+    hash::{Hash, Hasher},
+};
 #[derive(Debug, Clone)]
 pub struct Point {
     x: f64,
@@ -50,5 +53,10 @@ impl PartialEq for Point {
         self.x == other.x && self.y == other.y
     }
 }
-
+impl Hash for Point {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.x.to_bits().hash(state);
+        self.y.to_bits().hash(state);
+    }
+}
 impl Eq for Point {}
