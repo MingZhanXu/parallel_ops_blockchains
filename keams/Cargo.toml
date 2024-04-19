@@ -1,8 +1,5 @@
-[workspace]
-members = ["keams"]
-
 [package]
-name = "parallel_ops_blockchains"
+name = "keams"
 version = "0.1.0"
 edition = "2021"
 
