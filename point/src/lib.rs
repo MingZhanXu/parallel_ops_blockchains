@@ -9,6 +9,12 @@ impl Point {
     pub fn new(x:f64, y:f64) -> Point {
         Point { x, y }
     }
+    pub fn x(&self) -> f64 {
+        self.x
+    }
+    pub fn y(&self) -> f64 {
+        self.y
+    }
     pub fn dis(&self, other: &Point) -> f64 {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
@@ -46,7 +52,3 @@ impl PartialEq for Point {
 }
 
 impl Eq for Point {}
-#[cfg(test)]
-mod tests {
-    use super::*;
-}
