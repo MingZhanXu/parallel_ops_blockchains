@@ -64,7 +64,7 @@ mod tests {
         let len = 10;
         let user_id = 2;
         let user_max = 3;
-        let ans = (6, 10);
+        let ans = (6, 9);
         match cluster_range(len, user_id, user_max) {
             Ok(range) => assert_eq!(ans, range),
             Err(err) => panic!("不該錯誤: {}", err),
@@ -80,5 +80,77 @@ mod tests {
             Ok(_) => panic!("不該正確: 使用者範圍錯誤"),
             Err(err) => assert_eq!(ans, err.to_string()),
         };
+    }
+    #[test]
+    fn cluster_one_user_ok() {
+        let points = vec![
+            Point::new(0.0, -0.0),
+            Point::new(1.0, -1.0),
+            Point::new(2.0, -2.0),
+            Point::new(3.0, -3.0),
+            Point::new(4.0, -4.0),
+            Point::new(5.0, -5.0),
+            Point::new(6.0, -6.0),
+            Point::new(7.0, -7.0),
+            Point::new(8.0, -8.0),
+            Point::new(9.0, -9.0),
+        ];
+        let center = vec![
+            Point::new(2.0, -2.0),
+            Point::new(7.0, -7.0),
+        ];
+        let ans = vec![
+            vec![
+                &points[0],
+                &points[1],
+                &points[2],
+                &points[3],
+                &points[4],
+            ],
+            vec![
+                &points[5],
+                &points[6],
+                &points[7],
+                &points[8],
+                &points[9],
+                ],
+        ];
+        match cluster(&points, &center, 0, 1) {
+            Ok(team) => assert_eq!(ans, team),
+            Err(err) => panic!("不該錯誤: {}", err),
+        }
+    }
+    #[test]
+    fn cluster_two_user_ok() {
+        let points = vec![
+            Point::new(0.0, -0.0),
+            Point::new(1.0, -1.0),
+            Point::new(2.0, -2.0),
+            Point::new(3.0, -3.0),
+            Point::new(4.0, -4.0),
+            Point::new(5.0, -5.0),
+            Point::new(6.0, -6.0),
+            Point::new(7.0, -7.0),
+            Point::new(8.0, -8.0),
+            Point::new(9.0, -9.0),
+        ];
+        let center = vec![
+            Point::new(2.0, -2.0),
+            Point::new(7.0, -7.0),
+        ];
+        let ans = vec![
+            vec![
+                &points[0],
+                &points[1],
+                &points[2],
+                &points[3],
+                &points[4],
+            ],
+            vec![]
+        ];
+        match cluster(&points, &center, 0, 2) {
+            Ok(team) => assert_eq!(ans, team),
+            Err(err) => panic!("不該錯誤: {}", err),
+        }
     }
 }

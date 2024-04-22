@@ -69,7 +69,7 @@ pub fn cluster_range(
     let start = range * user_id;
     let end;
     if user_id == user_max - 1 {
-        end = len;
+        end = len - 1;
     } else if user_id < user_max {
         end = start + range - 1;
     } else {
@@ -80,8 +80,8 @@ pub fn cluster_range(
 }
 /// 分群
 pub fn cluster<'a>(
-    points: &Vec<Point>,
-    center_points: &'a Vec<Point>,
+    points: &'a Vec<Point>,
+    center_points: &Vec<Point>,
     user_id: usize,
     user_max: usize
 ) -> Result<Vec<Vec<&'a Point>>, Error> {
@@ -90,9 +90,10 @@ pub fn cluster<'a>(
 
     let (start, end) = cluster_range(points_len, user_id, user_max)?;
     let mut teams = vec![vec![]; centers_len];
-
-    for p in points[start..end].iter() {
-        let (index, p) = p.min_dis_point(center_points)?;
+    let mut i = 0;
+    for p in points[start..=end].iter() {
+        i = i + 1;
+        let (index, _) = p.min_dis_point(center_points)?;
         teams[index].push(p);
     }
     Ok(teams)
