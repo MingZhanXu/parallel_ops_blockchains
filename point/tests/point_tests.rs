@@ -37,21 +37,25 @@ mod tests {
     #[test]
     fn average_point_none() {
         let points: Vec<Point> = vec![];
-        let average_none = Point::average(&points);
-        let ans = None;
-        assert_eq!(ans, average_none);
+        let ans = "PointError: Points vector is empty".to_string();
+        match Point::center_point(&points) {
+            Ok(_) => panic!("不該正確: 輸入點群為空"),
+            Err(err) => assert_eq!(ans, err.to_string()),
+        }
     }
     #[test]
     fn average_point() {
         let point1 = Point::new(1.0, -1.0);
         let point2 = Point::new(3.3, -6.0);
         let point3 = Point::new(5.0, -9.2);
-        let points: Vec<Point> = vec![point1, point2, point3];
-        let average_none = Point::average(&points);
         let total_x = 1.0 + 3.3 + 5.0;
         let total_y = -1.0 + -6.0 + -9.2;
-        let ans = Some(Point::new(total_x / 3.0, total_y / 3.0));
-        assert_eq!(ans, average_none);
+        let ans = Point::new(total_x / 3.0, total_y / 3.0);
+        let points: Vec<Point> = vec![point1, point2, point3];
+        match Point::center_point(&points) {
+            Ok(point) => assert_eq!(ans, point),
+            Err(err) => panic!("不該錯誤，錯誤資訊: {}", err),
+        }
     }
     #[test]
     fn eq_point() {

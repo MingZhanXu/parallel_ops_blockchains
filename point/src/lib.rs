@@ -1,8 +1,22 @@
 // use std::process::Output;
 use std::{
+    fmt,
     ops::Add,
     hash::{Hash, Hasher},
 };
+#[derive(Debug)]
+pub enum Error {
+    PointError(String),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::PointError(msg) => write!(f, "PointError: {}", msg),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Point {
     x: f64,
@@ -18,22 +32,48 @@ impl Point {
     pub fn y(&self) -> f64 {
         self.y
     }
+    /// 兩點差距
     pub fn dis(&self, other: &Point) -> f64 {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
         let dis_squared = dx.powf(2.0) + dy.powf(2.0);
         dis_squared.sqrt()
     }
-    pub fn average(points: &Vec<Point>) -> Option<Point> {
+    /// 計算中心點
+    pub fn center_point(points: &Vec<Point>) -> Result<Point, Error> {
         if points.is_empty() {
-            return None;
+            let error_msg = "Points vector is empty".to_string();
+            return Err(Error::PointError(error_msg));
         }
         let mut sum = Point::new(0.0, 0.0);
         for p in points {
             sum = sum + p;
         }
         let len = points.len() as f64;
-        Some(Point::new(sum.x / len, sum.y / len))
+        Ok(Point::new(sum.x / len, sum.y / len))
+    }
+    /// 回傳最近點
+    pub fn min_dis_point<'a>(
+        point: &Point,
+        points: &'a [Point]
+    ) -> Result<(usize, &'a Point), Error> {
+        if points.is_empty() {
+            let error_msg = "Points vector is empty".to_string();
+            return Err(Error::PointError(error_msg));
+        }
+        let mut min_dis = std::f64::MAX;
+        let mut nearest_point = None;
+        for (i, c) in points.iter().enumerate() {
+            let dis = point.dis(c);
+            if min_dis > dis {
+                min_dis = dis;
+                nearest_point = Some((i, c));
+            }
+        }
+        match nearest_point {
+            Some((index, point)) => Ok((index, point)),
+            None => Err(Error::PointError("No points found".to_string())),
+        }
     }
 }
 impl Add for Point {
