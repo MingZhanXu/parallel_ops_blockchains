@@ -54,7 +54,7 @@ impl Point {
     }
     /// 回傳最近點
     pub fn min_dis_point<'a>(
-        point: &Point,
+        &self,
         points: &'a [Point]
     ) -> Result<(usize, &'a Point), Error> {
         if points.is_empty() {
@@ -64,7 +64,7 @@ impl Point {
         let mut min_dis = std::f64::MAX;
         let mut nearest_point = None;
         for (i, c) in points.iter().enumerate() {
-            let dis = point.dis(c);
+            let dis = self.dis(c);
             if min_dis > dis {
                 min_dis = dis;
                 nearest_point = Some((i, c));
