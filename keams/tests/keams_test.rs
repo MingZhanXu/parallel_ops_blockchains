@@ -75,7 +75,7 @@ mod tests {
         let len = 10;
         let user_id = 3;
         let user_max = 3;
-        let ans = "Invalid input: 輸入長度錯誤(user_id: 3 >= user_max: 3)".to_string();
+        let ans = "KeamsError: 輸入長度錯誤(user_id: 3 >= user_max: 3)".to_string();
         match cluster_range(len, user_id, user_max) {
             Ok(_) => panic!("不該正確: 使用者範圍錯誤"),
             Err(err) => assert_eq!(ans, err.to_string()),
