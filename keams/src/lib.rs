@@ -1,14 +1,36 @@
-use std::{collections::HashSet};
+use std::{
+    fmt,
+    collections::HashSet,
+};
 
 use rand::Rng;
 use point::*;
 
+#[derive(Debug)]
+pub enum Error {
+    InvalidInput(String),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::InvalidInput(msg) => write!(f, "Invalid input: {}", msg),
+        }
+    }
+}
+
+/// 產生隨機符合範圍的Point
 pub fn rand_point(start: f64, end: f64) -> Point {
     let x = rand::thread_rng().gen_range(start..end as f64);
     let y = rand::thread_rng().gen_range(start..end as f64);
     Point::new(x, y)
 }
-pub fn rand_points(start: f64, end: f64, num: usize) -> Vec<Point> {
+/// 產生多個隨機不重複符合範圍的Point群
+pub fn rand_points(
+    start: f64,
+    end: f64,
+    num: usize
+) -> Vec<Point> {
     let mut points: HashSet<Point> = HashSet::new();
     while points.len() < num {
         let p = rand_point(start, end);
@@ -16,17 +38,25 @@ pub fn rand_points(start: f64, end: f64, num: usize) -> Vec<Point> {
     }
     points.into_iter().collect()
 }
-
-pub fn rand_centers(centers_len: usize, points_len: usize) -> Vec<usize> {
-    let mut centers: HashSet<usize> = HashSet::new();
+/// 產生隨機不重複的中心點
+pub fn rand_centers(
+    centers_len: usize,
+    points: &Vec<Point>
+) -> Vec<Point> {
+    let points_len = points.len();
+    let mut centers: HashSet<Point> = HashSet::new();
     while centers.len() < centers_len {
         let n = rand::thread_rng().gen_range(0..points_len as usize);
-        centers.insert(n);
+        centers.insert(points[n].clone());
     }
     centers.into_iter().collect()
 }
-
-pub fn cluster_range(len: usize, user_id: usize, user_max: usize) -> (usize, usize) {
+/// 產生符合user_id的運算範圍
+pub fn cluster_range(
+    len: usize,
+    user_id: usize,
+    user_max: usize
+) -> Result<(usize, usize), Error> {
     let range = len / user_max;
     let start = range * user_id;
     let end;
@@ -35,30 +65,51 @@ pub fn cluster_range(len: usize, user_id: usize, user_max: usize) -> (usize, usi
     } else if user_id < user_max {
         end = start + range - 1;
     } else {
-        panic!("設定範圍錯誤");
+        return Err(Error::InvalidInput("Range error".to_string()));
     }
-    (start, end)
+    Ok((start, end))
 }
-fn min_dis(point: &Point, points: &Vec<Point>, centers: &Vec<usize>) -> usize {
+/// 回傳最近點
+pub fn min_dis_point<'a>(
+    point: &Point,
+    points: &'a [Point]
+) -> Result<(usize, &'a Point), Error> {
+    if points.is_empty() {
+        return Err(Error::InvalidInput("Points vector is empty".to_string()));
+    }
     let mut min_dis = std::f64::MAX;
-    let mut index = 0;
-    for (i, c) in centers.iter().enumerate() {
-        let dis = point.dis(&points[*c]);
+    let mut nearest_point = None;
+    for (i, c) in points.iter().enumerate() {
+        let dis = point.dis(c);
         if min_dis > dis {
             min_dis = dis;
-            index = i;
+            nearest_point = Some((i, c));
         }
     }
-    index
-}
-pub fn cluster(points: &Vec<Point>, centers: &Vec<usize>, user_id: usize, user_max: usize) -> Vec<Vec<usize>> {
-    let points_len = points.len();
-    let centers_len = centers.len();
-    let (start, end) = cluster_range(points_len, user_id, user_max);
-    let mut teams: Vec<Vec<usize>> = vec![vec![]; centers_len];
-    for (i, p) in points[start..end].iter().enumerate() {
-        let team_index = min_dis(p, points, centers);
-        teams[team_index].push(i + start);
+    match nearest_point {
+        Some((index, point)) => Ok((index, point)),
+        None => Err(Error::InvalidInput("No points found".to_string())),
     }
-    teams
+}
+/// 分群
+pub fn cluster<'a>(
+    points: &Vec<Point>,
+    center_points: &'a Vec<Point>,
+    user_id: usize,
+    user_max: usize
+) -> Result<Vec<Vec<&'a Point>>, Error> {
+    let points_len = points.len();
+    let centers_len = center_points.len();
+
+    let (start, end) = cluster_range(points_len, user_id, user_max)?;
+    let mut teams = vec![vec![]; centers_len];
+
+    for p in points[start..end].iter() {
+        let (index, p) = match min_dis_point(p,  center_points) {
+            Ok(result) => result,
+            Err(err) => return Err(err),
+        };
+        teams[index].push(p);
+    }
+    Ok(teams)
 }

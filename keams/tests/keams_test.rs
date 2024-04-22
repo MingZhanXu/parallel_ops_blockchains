@@ -1,8 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use std::result;
-
     use keams::*;
+    use point::Point;
     #[test]
     fn rand_one_point() {
         let start = 0.0;
@@ -57,12 +56,11 @@ mod tests {
         assert_eq!(ans, range);
     }
     // #[test]
+    // #[should_panic(expected = "設定範圍錯誤")]
     // fn cluster_range_panic() {
     //     let len = 10;
     //     let user_id = 3;
     //     let user_max = 3;
-    //     let result = cluster_range(len, user_id, user_max);
-    //     let ans = (6, 10);
-    //     assert_eq!(ans, range);
+    //     cluster_range(len, user_id, user_max);
     // }
 }
