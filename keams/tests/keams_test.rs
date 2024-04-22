@@ -24,43 +24,61 @@ mod tests {
             }
         }
     }
-    // #[test]
-    // fn rand_center_different() {
-    //     let centers_len = 4;
-    //     let points_len = 50;
-    //     let centers = rand_centers(centers_len, points_len);
-    //     for (i, c1) in centers.iter().enumerate() {
-    //         for (j, c2) in centers.iter().enumerate() {
-    //             if i != j {
-    //                 assert_ne!(c1, c2);
-    //             }
-    //         }
-    //     }
-    // }
-    // #[test]
-    // fn cluster_range_same_id_zero() {
-    //     let len = 10;
-    //     let user_id = 0;
-    //     let user_max = 3;
-    //     let range = cluster_range(len, user_id, user_max)?;
-    //     let ans = (0, 2);
-    //     assert_eq!(ans, range);
-    // }
-    // #[test]
-    // fn cluster_range_same_id_max() {
-    //     let len = 10;
-    //     let user_id = 2;
-    //     let user_max = 3;
-    //     let range = cluster_range(len, user_id, user_max)?;
-    //     let ans = (6, 10);
-    //     assert_eq!(ans, range);
-    // }
-    // #[test]
-    // #[should_panic(expected = "設定範圍錯誤")]
-    // fn cluster_range_panic() {
-    //     let len = 10;
-    //     let user_id = 3;
-    //     let user_max = 3;
-    //     cluster_range(len, user_id, user_max);
-    // }
+    #[test]
+    fn rand_center_different() {
+        let centers_len = 4;
+        let points = vec![
+            Point::new(0.0, -0.0),
+            Point::new(1.0, -1.0),
+            Point::new(2.0, -2.0),
+            Point::new(3.0, -3.0),
+            Point::new(4.0, -4.0),
+            Point::new(5.0, -5.0),
+            Point::new(6.0, -6.0),
+            Point::new(7.0, -7.0),
+            Point::new(8.0, -8.0),
+            Point::new(9.0, -9.0),
+        ];
+        let centers = rand_centers(centers_len, &points);
+        for (i, c1) in centers.iter().enumerate() {
+            for (j, c2) in centers.iter().enumerate() {
+                if i != j {
+                    assert_ne!(c1, c2);
+                }
+            }
+        }
+    }
+    #[test]
+    fn cluster_range_same_id_zero() {
+        let len = 10;
+        let user_id = 0;
+        let user_max = 3;
+        let ans = (0, 2);
+        match cluster_range(len, user_id, user_max) {
+            Ok(range) => assert_eq!(ans, range),
+            Err(err) => panic!("不該錯誤: {}", err),
+        };
+    }
+    #[test]
+    fn cluster_range_same_id_max() {
+        let len = 10;
+        let user_id = 2;
+        let user_max = 3;
+        let ans = (6, 10);
+        match cluster_range(len, user_id, user_max) {
+            Ok(range) => assert_eq!(ans, range),
+            Err(err) => panic!("不該錯誤: {}", err),
+        };
+    }
+    #[test]
+    fn cluster_range_panic() {
+        let len = 10;
+        let user_id = 3;
+        let user_max = 3;
+        let ans = "Invalid input: 輸入長度錯誤(user_id: 3 >= user_max: 3)".to_string();
+        match cluster_range(len, user_id, user_max) {
+            Ok(_) => panic!("不該正確: 使用者範圍錯誤"),
+            Err(err) => assert_eq!(ans, err.to_string()),
+        };
+    }
 }

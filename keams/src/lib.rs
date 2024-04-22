@@ -65,7 +65,8 @@ pub fn cluster_range(
     } else if user_id < user_max {
         end = start + range - 1;
     } else {
-        return Err(Error::InvalidInput("Range error".to_string()));
+        let err_msg = format!("輸入長度錯誤(user_id: {} >= user_max: {})", user_id, user_max);
+        return Err(Error::InvalidInput(err_msg));
     }
     Ok((start, end))
 }
