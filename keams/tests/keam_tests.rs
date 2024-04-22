@@ -56,7 +56,7 @@ mod tests {
         let ans = (0, 2);
         match cluster_range(len, user_id, user_max) {
             Ok(range) => assert_eq!(ans, range),
-            Err(err) => panic!("不該錯誤: {}", err),
+            Err(err) => panic!("不該錯誤: 錯誤資訊: {}", err),
         };
     }
     #[test]
@@ -67,11 +67,11 @@ mod tests {
         let ans = (6, 10);
         match cluster_range(len, user_id, user_max) {
             Ok(range) => assert_eq!(ans, range),
-            Err(err) => panic!("不該錯誤: {}", err),
+            Err(err) => panic!("不該錯誤: 錯誤資訊: {}", err),
         };
     }
     #[test]
-    fn cluster_range_panic() {
+    fn cluster_range_error() {
         let len = 10;
         let user_id = 3;
         let user_max = 3;

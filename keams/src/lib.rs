@@ -70,28 +70,6 @@ pub fn cluster_range(
     }
     Ok((start, end))
 }
-/// 回傳最近點
-pub fn min_dis_point<'a>(
-    point: &Point,
-    points: &'a [Point]
-) -> Result<(usize, &'a Point), Error> {
-    if points.is_empty() {
-        return Err(Error::InvalidInput("Points vector is empty".to_string()));
-    }
-    let mut min_dis = std::f64::MAX;
-    let mut nearest_point = None;
-    for (i, c) in points.iter().enumerate() {
-        let dis = point.dis(c);
-        if min_dis > dis {
-            min_dis = dis;
-            nearest_point = Some((i, c));
-        }
-    }
-    match nearest_point {
-        Some((index, point)) => Ok((index, point)),
-        None => Err(Error::InvalidInput("No points found".to_string())),
-    }
-}
 /// 分群
 pub fn cluster<'a>(
     points: &Vec<Point>,
@@ -106,7 +84,7 @@ pub fn cluster<'a>(
     let mut teams = vec![vec![]; centers_len];
 
     for p in points[start..end].iter() {
-        let (index, p) = match min_dis_point(p,  center_points) {
+        let (index, p) = match p.min_dis_point(center_points) {
             Ok(result) => result,
             Err(err) => return Err(err),
         };
