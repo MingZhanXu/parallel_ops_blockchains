@@ -11,14 +11,11 @@ use point::Error as PointError;
 pub enum Error {
     KeamsError(String),
 }
-
 impl From<PointError> for Error {
     fn from(error: PointError) -> Self {
         Error::KeamsError(error.to_string())
     }
 }
-
-
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -60,7 +57,7 @@ pub fn rand_centers(
     centers.into_iter().collect()
 }
 /// 產生符合user_id的運算範圍
-pub fn cluster_range(
+pub fn user_range(
     len: usize,
     user_id: usize,
     user_max: usize
@@ -88,7 +85,7 @@ pub fn cluster<'a>(
     let points_len = points.len();
     let centers_len = center_points.len();
 
-    let (start, end) = cluster_range(points_len, user_id, user_max)?;
+    let (start, end) = user_range(points_len, user_id, user_max)?;
     let mut teams = vec![vec![]; centers_len];
     let mut i = 0;
     for p in points[start..=end].iter() {
@@ -97,4 +94,18 @@ pub fn cluster<'a>(
         teams[index].push(p);
     }
     Ok(teams)
+}
+/// 計算新中心點群
+pub fn center_points(
+    team_points: &Vec<Vec<Point>>,
+    user_id: usize,
+    user_max: usize
+) -> Result<Vec<Point>, Error> {
+    let centers_len = team_points.len();
+    let (start, end) = user_range(centers_len, user_id, user_max)?;
+    let mut center_points = Vec::with_capacity(centers_len);
+    for i in start..=end {
+        center_points[i] = Point::center_point(&team_points[i])?;
+    }
+    Ok(center_points)
 }

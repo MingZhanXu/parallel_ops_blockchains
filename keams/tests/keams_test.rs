@@ -53,36 +53,36 @@ mod tests {
     }
     #[test]
     /// 測試user_id為0是否會正常工作
-    fn cluster_range_same_id_zero() {
+    fn user_range_same_id_zero() {
         let len = 10;
         let user_id = 0;
         let user_max = 3;
         let ans = (0, 2);
-        match cluster_range(len, user_id, user_max) {
+        match user_range(len, user_id, user_max) {
             Ok(range) => assert_eq!(ans, range),
             Err(err) => panic!("不該錯誤: {}", err),
         };
     }
     #[test]
     /// 測試user_id為user_max-1是否會正常工作
-    fn cluster_range_same_id_max() {
+    fn user_range_same_id_max() {
         let len = 10;
         let user_id = 2;
         let user_max = 3;
         let ans = (6, 9);
-        match cluster_range(len, user_id, user_max) {
+        match user_range(len, user_id, user_max) {
             Ok(range) => assert_eq!(ans, range),
             Err(err) => panic!("不該錯誤: {}", err),
         };
     }
     #[test]
     /// 測試user_id為user_max是否會觸發錯誤
-    fn cluster_range_panic() {
+    fn user_range_panic() {
         let len = 10;
         let user_id = 3;
         let user_max = 3;
         let ans = "KeamsError: 輸入長度錯誤(user_id: 3 >= user_max: 3)".to_string();
-        match cluster_range(len, user_id, user_max) {
+        match user_range(len, user_id, user_max) {
             Ok(_) => panic!("不該正確: 使用者範圍錯誤"),
             Err(err) => assert_eq!(ans, err.to_string()),
         };
@@ -244,5 +244,5 @@ mod tests {
             Err(err) => panic!("不該錯誤: {}", err),
         }
     }
-    
+
 }
