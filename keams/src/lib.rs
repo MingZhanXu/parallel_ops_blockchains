@@ -4,17 +4,25 @@ use std::{
 };
 
 use rand::Rng;
-use point::*;
+use point::Point;
+use point::Error as PointError;
 
 #[derive(Debug)]
 pub enum Error {
-    InvalidInput(String),
+    KeamsError(String),
 }
+
+impl From<PointError> for Error {
+    fn from(error: PointError) -> Self {
+        Error::KeamsError(error.to_string())
+    }
+}
+
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::InvalidInput(msg) => write!(f, "Invalid input: {}", msg),
+            Error::KeamsError(msg) => write!(f, "KeamsError: {}", msg),
         }
     }
 }
@@ -66,31 +74,9 @@ pub fn cluster_range(
         end = start + range - 1;
     } else {
         let err_msg = format!("輸入長度錯誤(user_id: {} >= user_max: {})", user_id, user_max);
-        return Err(Error::InvalidInput(err_msg));
+        return Err(Error::KeamsError(err_msg));
     }
     Ok((start, end))
-}
-/// 回傳最近點
-pub fn min_dis_point<'a>(
-    point: &Point,
-    points: &'a [Point]
-) -> Result<(usize, &'a Point), Error> {
-    if points.is_empty() {
-        return Err(Error::InvalidInput("Points vector is empty".to_string()));
-    }
-    let mut min_dis = std::f64::MAX;
-    let mut nearest_point = None;
-    for (i, c) in points.iter().enumerate() {
-        let dis = point.dis(c);
-        if min_dis > dis {
-            min_dis = dis;
-            nearest_point = Some((i, c));
-        }
-    }
-    match nearest_point {
-        Some((index, point)) => Ok((index, point)),
-        None => Err(Error::InvalidInput("No points found".to_string())),
-    }
 }
 /// 分群
 pub fn cluster<'a>(
@@ -106,10 +92,7 @@ pub fn cluster<'a>(
     let mut teams = vec![vec![]; centers_len];
 
     for p in points[start..end].iter() {
-        let (index, p) = match min_dis_point(p,  center_points) {
-            Ok(result) => result,
-            Err(err) => return Err(err),
-        };
+        let (index, p) = p.min_dis_point(center_points)?;
         teams[index].push(p);
     }
     Ok(teams)
