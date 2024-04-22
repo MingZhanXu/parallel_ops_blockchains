@@ -62,18 +62,15 @@ impl Point {
             return Err(Error::PointError(error_msg));
         }
         let mut min_dis = std::f64::MAX;
-        let mut nearest_point = None;
+        let mut nearest_point = (0, &points[0]);
         for (i, c) in points.iter().enumerate() {
             let dis = self.dis(c);
-            if min_dis > dis {
+            if min_dis >= dis {
                 min_dis = dis;
-                nearest_point = Some((i, c));
+                nearest_point = (i, c);
             }
         }
-        match nearest_point {
-            Some((index, point)) => Ok((index, point)),
-            None => Err(Error::PointError("No points found".to_string())),
-        }
+        Ok(nearest_point)
     }
 }
 impl Add for Point {
