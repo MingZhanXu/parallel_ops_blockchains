@@ -3,6 +3,7 @@ mod tests {
     use keams::*;
     use point::Point;
     #[test]
+    /// 測試是否能產生符合範圍的點
     fn rand_one_point() {
         let start = 0.0;
         let end = 1024.0;
@@ -11,6 +12,7 @@ mod tests {
         assert!(point.y() >= start && point.y() <= end);
     }
     #[test]
+    /// 測試隨機點群是否會重複
     fn rand_points_different() {
         let start = 0.0;
         let end = 1024.0;
@@ -25,6 +27,7 @@ mod tests {
         }
     }
     #[test]
+    /// 測試隨機中心是否會重複
     fn rand_center_different() {
         let centers_len = 4;
         let points = vec![
@@ -49,6 +52,7 @@ mod tests {
         }
     }
     #[test]
+    /// 測試user_id為0是否會正常工作
     fn cluster_range_same_id_zero() {
         let len = 10;
         let user_id = 0;
@@ -60,6 +64,7 @@ mod tests {
         };
     }
     #[test]
+    /// 測試user_id為user_max-1是否會正常工作
     fn cluster_range_same_id_max() {
         let len = 10;
         let user_id = 2;
@@ -71,6 +76,7 @@ mod tests {
         };
     }
     #[test]
+    /// 測試user_id為user_max是否會觸發錯誤
     fn cluster_range_panic() {
         let len = 10;
         let user_id = 3;
@@ -82,6 +88,8 @@ mod tests {
         };
     }
     #[test]
+    /// 測試分群，最max_user為2時是否回傳正確的資料
+    /// user_id = 0 point 0~9
     fn cluster_one_user_ok() {
         let points = vec![
             Point::new(0.0, -0.0),
@@ -121,6 +129,9 @@ mod tests {
         }
     }
     #[test]
+    /// 測試分群，最max_user為2時是否回傳正確的資料
+    /// user_id = 0 point 0~4
+    /// user_id = 1 point 5~9
     fn cluster_two_user_ok() {
         let points = vec![
             Point::new(0.0, -0.0),
@@ -138,7 +149,7 @@ mod tests {
             Point::new(2.0, -2.0),
             Point::new(7.0, -7.0),
         ];
-        let ans = vec![
+        let ans_1 = vec![
             vec![
                 &points[0],
                 &points[1],
@@ -148,9 +159,90 @@ mod tests {
             ],
             vec![]
         ];
+        let ans_2 = vec![
+            vec![],
+            vec![
+                &points[5],
+                &points[6],
+                &points[7],
+                &points[8],
+                &points[9],
+            ],
+        ];
+        // user1
         match cluster(&points, &center, 0, 2) {
-            Ok(team) => assert_eq!(ans, team),
+            Ok(team) => assert_eq!(ans_1, team),
+            Err(err) => panic!("不該錯誤: {}", err),
+        }
+        // user2
+        match cluster(&points, &center, 1, 2) {
+            Ok(team) => assert_eq!(ans_2, team),
             Err(err) => panic!("不該錯誤: {}", err),
         }
     }
+    #[test]
+    /// 測試分群，最max_user為3時是否回傳正確的資料
+    /// user_id = 0 point 0~2
+    /// user_id = 1 point 3~5
+    /// user_id = 2 point 6~9
+    fn cluster_three_user_ok() {
+        let points = vec![
+            Point::new(0.0, -0.0),
+            Point::new(1.0, -1.0),
+            Point::new(2.0, -2.0),
+            Point::new(3.0, -3.0),
+            Point::new(4.0, -4.0),
+            Point::new(5.0, -5.0),
+            Point::new(6.0, -6.0),
+            Point::new(7.0, -7.0),
+            Point::new(8.0, -8.0),
+            Point::new(9.0, -9.0),
+        ];
+        let center = vec![
+            Point::new(2.0, -2.0),
+            Point::new(7.0, -7.0),
+        ];
+        let ans_1 = vec![
+            vec![
+                &points[0],
+                &points[1],
+                &points[2],
+            ],
+            vec![]
+        ];
+        let ans_2 = vec![
+            vec![
+                &points[3],
+                &points[4],
+            ],
+            vec![
+                &points[5],
+            ],
+        ];
+        let ans_3 = vec![
+            vec![],
+            vec![
+                &points[6],
+                &points[7],
+                &points[8],
+                &points[9],
+            ],
+        ];
+        // user1
+        match cluster(&points, &center, 0, 3) {
+            Ok(team) => assert_eq!(ans_1, team),
+            Err(err) => panic!("不該錯誤: {}", err),
+        }
+        // user2
+        match cluster(&points, &center, 1, 3) {
+            Ok(team) => assert_eq!(ans_2, team),
+            Err(err) => panic!("不該錯誤: {}", err),
+        }
+        // user2
+        match cluster(&points, &center, 2, 3) {
+            Ok(team) => assert_eq!(ans_3, team),
+            Err(err) => panic!("不該錯誤: {}", err),
+        }
+    }
+    
 }
