@@ -128,4 +128,12 @@ mod tests {
         let ans = true;
         assert_eq!(ans, point_eq);
     }
+    #[test]
+    fn eq_rhs_point() {
+        let point1 = Point::new(1.0, -1.0);
+        let point2 = &point1;
+        let poiint_eq = point1 == point2;
+        let ans = true;
+        assert_eq!(ans, poiint_eq);
+    }
 }

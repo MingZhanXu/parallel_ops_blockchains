@@ -90,10 +90,15 @@ impl PartialEq for Point {
         self.x == other.x && self.y == other.y
     }
 }
+impl Eq for Point {}
+impl PartialEq<&Point> for Point {
+    fn eq(&self, other: &&Self) -> bool {
+        self == *other
+    }
+}
 impl Hash for Point {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.x.to_bits().hash(state);
         self.y.to_bits().hash(state);
     }
 }
-impl Eq for Point {}
