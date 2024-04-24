@@ -1,3 +1,4 @@
+use std::process::CommandEnvs;
 use std::{
     fmt,
     collections::HashSet,
@@ -11,20 +12,66 @@ use point::Error as PointError;
 pub enum Error {
     KeamsError(String),
 }
-
 impl From<PointError> for Error {
     fn from(error: PointError) -> Self {
         Error::KeamsError(error.to_string())
     }
 }
-
-
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::KeamsError(msg) => write!(f, "KeamsError: {}", msg),
         }
     }
+}
+
+pub struct KeamsTask {
+    user_id: usize,
+    user_max: usize,
+    step: usize,
+    points: Vec<Point>,
+    points_center: Vec<Point>,
+    points_team: Vec<Vec<usize>>,
+}
+
+impl KeamsTask {
+    pub fn new(
+        user_id: usize,
+        user_max: usize,
+        points: Vec<Point>,
+        points_center: Vec<Point>,
+    ) -> KeamsTask {
+        if user_id >= user_max{
+            panic!("user_id 不可比 user_max 長或一樣");
+        }
+        KeamsTask {
+            user_id,
+            user_max,
+            step: 0,
+            points,
+            points_center,
+            points_team: vec![vec![]],
+        }
+    }
+    pub fn user_id(&self) -> usize {
+        self.user_id
+    }
+    pub fn user_max(&self) -> usize {
+        self.user_max
+    }
+    pub fn points(&self) -> &Vec<Point> {
+        &self.points
+    }
+    pub fn points_center(&self) -> &Vec<Point> {
+        &self.points_center
+    }
+    pub fn points_team(&self) -> &Vec<Vec<usize>> {
+        &self.points_team
+    }
+    pub fn step(&self) -> usize {
+        self.step
+    }
+
 }
 
 /// 產生隨機符合範圍的Point
@@ -49,7 +96,7 @@ pub fn rand_points(
 /// 產生隨機不重複的中心點
 pub fn rand_centers(
     centers_len: usize,
-    points: &Vec<Point>
+    points: &[Point]
 ) -> Vec<Point> {
     let points_len = points.len();
     let mut centers: HashSet<Point> = HashSet::new();
@@ -60,7 +107,7 @@ pub fn rand_centers(
     centers.into_iter().collect()
 }
 /// 產生符合user_id的運算範圍
-pub fn cluster_range(
+pub fn user_range(
     len: usize,
     user_id: usize,
     user_max: usize
@@ -69,7 +116,7 @@ pub fn cluster_range(
     let start = range * user_id;
     let end;
     if user_id == user_max - 1 {
-        end = len;
+        end = len - 1;
     } else if user_id < user_max {
         end = start + range - 1;
     } else {
@@ -80,20 +127,35 @@ pub fn cluster_range(
 }
 /// 分群
 pub fn cluster<'a>(
-    points: &Vec<Point>,
-    center_points: &'a Vec<Point>,
+    points: &'a [Point],
+    center_points: &[Point],
     user_id: usize,
     user_max: usize
 ) -> Result<Vec<Vec<&'a Point>>, Error> {
     let points_len = points.len();
     let centers_len = center_points.len();
 
-    let (start, end) = cluster_range(points_len, user_id, user_max)?;
+    let (start, end) = user_range(points_len, user_id, user_max)?;
     let mut teams = vec![vec![]; centers_len];
-
-    for p in points[start..end].iter() {
-        let (index, p) = p.min_dis_point(center_points)?;
+    let mut i = 0;
+    for p in points[start..=end].iter() {
+        i = i + 1;
+        let (index, _) = p.min_dis_point(center_points)?;
         teams[index].push(p);
     }
     Ok(teams)
+}
+/// 計算新中心點群
+pub fn center_points(
+    team_points: &[Vec<Point>],
+    user_id: usize,
+    user_max: usize
+) -> Result<Vec<Point>, Error> {
+    let centers_len = team_points.len();
+    let (start, end) = user_range(centers_len, user_id, user_max)?;
+    let mut center_points = Vec::with_capacity(centers_len);
+    for i in start..=end {
+        center_points[i] = Point::center_point(&team_points[i])?;
+    }
+    Ok(center_points)
 }
