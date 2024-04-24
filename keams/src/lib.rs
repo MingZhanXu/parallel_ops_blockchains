@@ -24,13 +24,54 @@ impl fmt::Display for Error {
     }
 }
 
+pub struct OpsRange {
+    start: usize,
+    end: usize,
+}
+impl OpsRange {
+    pub fn new(
+        len: usize,
+        num: usize,
+        num_max: usize
+    ) -> Result<OpsRange, Error> {
+        if len == 0 {
+            let err_msg = format!("輸入長度錯誤(len == 0)");
+            return Err(Error::KeamsError(err_msg));
+        } else if num_max == 0 {
+            let err_msg = format!("輸入長度錯誤(num_max == 0)");
+            return Err(Error::KeamsError(err_msg));
+        }
+        
+        let range = len / num_max;
+        let start = range * num;
+        let end;
+        if num == num_max - 1 {
+            end = len - 1;
+        } else if num < num_max {
+            end = start + range - 1;
+        } else {
+            let err_msg = format!("輸入長度錯誤(num: {} >= num_max: {})", num, num_max);
+            return Err(Error::KeamsError(err_msg));
+        }
+        Ok(OpsRange{start, end})
+    }
+    pub fn start(&self) -> usize {
+        self.start
+    }
+    pub fn end(&self) -> usize {
+        self.end
+    }
+}
+
 pub struct KeamsTask {
     user_id: usize,
     user_max: usize,
     step: usize,
     points: Vec<Point>,
     points_center: Vec<Point>,
+    center_ops_range: OpsRange,
     points_team: Vec<Vec<usize>>,
+    team_ops_range: OpsRange,
 }
 
 impl KeamsTask {
@@ -39,18 +80,26 @@ impl KeamsTask {
         user_max: usize,
         points: Vec<Point>,
         points_center: Vec<Point>,
-    ) -> KeamsTask {
+    ) -> Result<KeamsTask, Error> {
         if user_id >= user_max{
-            panic!("user_id 不可比 user_max 長或一樣");
+            let err_msg = format!("輸入長度錯誤(user_id: {} >= user_max: {})", user_id, user_max);
+            return Err(Error::KeamsError(err_msg));
         }
-        KeamsTask {
+        let center_len = points.len();
+        let team_len  = points_center.len();
+        let center_ops_range = OpsRange::new(center_len, user_id, user_max)?;
+        let team_ops_range = OpsRange::new(team_len, user_id, user_max)?;
+        let keams_task = KeamsTask {
             user_id,
             user_max,
             step: 0,
             points,
+            center_ops_range,
             points_center,
-            points_team: vec![vec![]],
-        }
+            team_ops_range,
+            points_team: vec![vec![]; team_len],
+        };
+        Ok(keams_task)
     }
     pub fn user_id(&self) -> usize {
         self.user_id
@@ -70,7 +119,12 @@ impl KeamsTask {
     pub fn step(&self) -> usize {
         self.step
     }
-
+    pub fn center_ops_range(&self) -> &OpsRange {
+        &self.center_ops_range
+    }
+    pub fn team_ops_range(&self) -> &OpsRange {
+        &self.team_ops_range
+    }
 }
 
 /// 產生隨機符合範圍的Point
