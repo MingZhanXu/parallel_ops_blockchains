@@ -1,3 +1,4 @@
+use std::process::CommandEnvs;
 use std::{
     fmt,
     collections::HashSet,
@@ -24,6 +25,55 @@ impl fmt::Display for Error {
     }
 }
 
+pub struct KeamsTask {
+    user_id: usize,
+    user_max: usize,
+    step: usize,
+    points: Vec<Point>,
+    points_center: Vec<Point>,
+    points_team: Vec<Vec<usize>>,
+}
+
+impl KeamsTask {
+    pub fn new(
+        user_id: usize,
+        user_max: usize,
+        points: Vec<Point>,
+        points_center: Vec<Point>,
+    ) -> KeamsTask {
+        if user_id >= user_max{
+            panic!("user_id 不可比 user_max 長或一樣");
+        }
+        KeamsTask {
+            user_id,
+            user_max,
+            step: 0,
+            points,
+            points_center,
+            points_team: vec![vec![]],
+        }
+    }
+    pub fn user_id(&self) -> usize {
+        self.user_id
+    }
+    pub fn user_max(&self) -> usize {
+        self.user_max
+    }
+    pub fn points(&self) -> &Vec<Point> {
+        &self.points
+    }
+    pub fn points_center(&self) -> &Vec<Point> {
+        &self.points_center
+    }
+    pub fn points_team(&self) -> &Vec<Vec<usize>> {
+        &self.points_team
+    }
+    pub fn step(&self) -> usize {
+        self.step
+    }
+
+}
+
 /// 產生隨機符合範圍的Point
 pub fn rand_point(start: f64, end: f64) -> Point {
     let x = rand::thread_rng().gen_range(start..end as f64);
@@ -46,7 +96,7 @@ pub fn rand_points(
 /// 產生隨機不重複的中心點
 pub fn rand_centers(
     centers_len: usize,
-    points: &Vec<Point>
+    points: &[Point]
 ) -> Vec<Point> {
     let points_len = points.len();
     let mut centers: HashSet<Point> = HashSet::new();
@@ -77,8 +127,8 @@ pub fn user_range(
 }
 /// 分群
 pub fn cluster<'a>(
-    points: &'a Vec<Point>,
-    center_points: &Vec<Point>,
+    points: &'a [Point],
+    center_points: &[Point],
     user_id: usize,
     user_max: usize
 ) -> Result<Vec<Vec<&'a Point>>, Error> {
@@ -97,7 +147,7 @@ pub fn cluster<'a>(
 }
 /// 計算新中心點群
 pub fn center_points(
-    team_points: &Vec<Vec<Point>>,
+    team_points: &[Vec<Point>],
     user_id: usize,
     user_max: usize
 ) -> Result<Vec<Point>, Error> {

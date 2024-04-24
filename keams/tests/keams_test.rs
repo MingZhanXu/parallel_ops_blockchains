@@ -244,5 +244,24 @@ mod tests {
             Err(err) => panic!("不該錯誤: {}", err),
         }
     }
-
+    #[test]
+    /// 測試新建是否成功
+    fn new_keams_task() {
+        let points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
+        let points_center = vec![Point::new(0.0, -1.0)];
+        let keams_task = KeamsTask::new(0, 1, points, points_center);
+        
+        let ans_user_id = 0;
+        let ans_user_max = 1;
+        let ans_step = 0;
+        let ans_points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
+        let ans_points_center = vec![Point::new(0.0, -1.0)];
+        let ans_points_team: Vec<Vec<&Point>> = vec![vec![]];
+        assert_eq!(ans_user_id, keams_task.user_id());
+        assert_eq!(ans_user_max, keams_task.user_max());
+        assert_eq!(ans_step, keams_task.step());
+        // assert_eq!(ans_points, keams_task.points());
+        // assert_eq!(ans_points_center, keams_task.points_center());
+        // assert_eq!(ans_points_team, keams_task.points_team());
+    }
 }
