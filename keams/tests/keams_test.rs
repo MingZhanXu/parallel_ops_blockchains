@@ -5,19 +5,21 @@ mod tests {
     #[test]
     /// 測試是否能產生符合範圍的點
     fn rand_one_point() {
+        let simulation = Simulation;
         let start = 0.0;
         let end = 1024.0;
-        let point = rand_point(start, end);
+        let point = simulation.rand_point(start, end);
         assert!(point.x() >= start && point.x() <= end);
         assert!(point.y() >= start && point.y() <= end);
     }
     #[test]
     /// 測試隨機點群是否會重複
     fn rand_points_different() {
+        let simulation = Simulation;
         let start = 0.0;
         let end = 1024.0;
         let num = 10;
-        let point = rand_points(start, end, num);
+        let point = simulation.rand_points(start, end, num);
         for (i, p1) in point.iter().enumerate() {
             for (j, p2) in point.iter().enumerate() {
                 if i != j {
@@ -29,6 +31,7 @@ mod tests {
     #[test]
     /// 測試隨機中心是否會重複
     fn rand_center_different() {
+        let simulation = Simulation;
         let centers_len = 4;
         let points = vec![
             Point::new(0.0, -0.0),
@@ -42,7 +45,7 @@ mod tests {
             Point::new(8.0, -8.0),
             Point::new(9.0, -9.0),
         ];
-        let centers = rand_centers(centers_len, &points);
+        let centers = simulation.rand_centers(centers_len, &points);
         for (i, c1) in centers.iter().enumerate() {
             for (j, c2) in centers.iter().enumerate() {
                 if i != j {

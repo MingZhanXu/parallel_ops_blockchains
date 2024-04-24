@@ -24,6 +24,48 @@ impl fmt::Display for Error {
     }
 }
 
+pub struct Simulation;
+impl Simulation {
+    /// 產生隨機符合範圍的Point
+    pub fn rand_point(
+        &self,
+        start: f64,
+        end: f64
+    ) -> Point {
+        let x = rand::thread_rng().gen_range(start..end as f64);
+        let y = rand::thread_rng().gen_range(start..end as f64);
+        Point::new(x, y)
+    }
+    /// 產生多個隨機不重複符合範圍的Point群
+    pub fn rand_points(
+        &self,
+        start: f64,
+        end: f64,
+        num: usize
+    ) -> Vec<Point> {
+        let mut points: HashSet<Point> = HashSet::new();
+        while points.len() < num {
+            let p = self.rand_point(start, end);
+            points.insert(p);
+        }
+        points.into_iter().collect()
+    }
+    /// 產生隨機不重複的中心點
+    pub fn rand_centers(
+        &self,
+        centers_len: usize,
+        points: &[Point]
+    ) -> Vec<Point> {
+        let points_len = points.len();
+        let mut centers: HashSet<Point> = HashSet::new();
+        while centers.len() < centers_len {
+            let n = rand::thread_rng().gen_range(0..points_len as usize);
+            centers.insert(points[n].clone());
+        }
+        centers.into_iter().collect()
+    }
+}
+
 pub struct OpsRange {
     start: usize,
     end: usize,
@@ -73,7 +115,6 @@ pub struct KeamsTask {
     points_team: Vec<Vec<usize>>,
     team_ops_range: OpsRange,
 }
-
 impl KeamsTask {
     pub fn new(
         user_id: usize,
@@ -127,88 +168,38 @@ impl KeamsTask {
     }
 }
 
-/// 產生隨機符合範圍的Point
-pub fn rand_point(start: f64, end: f64) -> Point {
-    let x = rand::thread_rng().gen_range(start..end as f64);
-    let y = rand::thread_rng().gen_range(start..end as f64);
-    Point::new(x, y)
-}
-/// 產生多個隨機不重複符合範圍的Point群
-pub fn rand_points(
-    start: f64,
-    end: f64,
-    num: usize
-) -> Vec<Point> {
-    let mut points: HashSet<Point> = HashSet::new();
-    while points.len() < num {
-        let p = rand_point(start, end);
-        points.insert(p);
-    }
-    points.into_iter().collect()
-}
-/// 產生隨機不重複的中心點
-pub fn rand_centers(
-    centers_len: usize,
-    points: &[Point]
-) -> Vec<Point> {
-    let points_len = points.len();
-    let mut centers: HashSet<Point> = HashSet::new();
-    while centers.len() < centers_len {
-        let n = rand::thread_rng().gen_range(0..points_len as usize);
-        centers.insert(points[n].clone());
-    }
-    centers.into_iter().collect()
-}
-/// 產生符合user_id的運算範圍
-pub fn user_range(
-    len: usize,
-    user_id: usize,
-    user_max: usize
-) -> Result<(usize, usize), Error> {
-    let range = len / user_max;
-    let start = range * user_id;
-    let end;
-    if user_id == user_max - 1 {
-        end = len - 1;
-    } else if user_id < user_max {
-        end = start + range - 1;
-    } else {
-        let err_msg = format!("輸入長度錯誤(user_id: {} >= user_max: {})", user_id, user_max);
-        return Err(Error::KeamsError(err_msg));
-    }
-    Ok((start, end))
-}
-/// 分群
-pub fn cluster<'a>(
-    points: &'a [Point],
-    center_points: &[Point],
-    user_id: usize,
-    user_max: usize
-) -> Result<Vec<Vec<&'a Point>>, Error> {
-    let points_len = points.len();
-    let centers_len = center_points.len();
 
-    let (start, end) = user_range(points_len, user_id, user_max)?;
-    let mut teams = vec![vec![]; centers_len];
-    let mut i = 0;
-    for p in points[start..=end].iter() {
-        i = i + 1;
-        let (index, _) = p.min_dis_point(center_points)?;
-        teams[index].push(p);
-    }
-    Ok(teams)
-}
-/// 計算新中心點群
-pub fn center_points(
-    team_points: &[Vec<Point>],
-    user_id: usize,
-    user_max: usize
-) -> Result<Vec<Point>, Error> {
-    let centers_len = team_points.len();
-    let (start, end) = user_range(centers_len, user_id, user_max)?;
-    let mut center_points = Vec::with_capacity(centers_len);
-    for i in start..=end {
-        center_points[i] = Point::center_point(&team_points[i])?;
-    }
-    Ok(center_points)
-}
+// /// 分群
+// pub fn cluster<'a>(
+//     points: &'a [Point],
+//     center_points: &[Point],
+//     user_id: usize,
+//     user_max: usize
+// ) -> Result<Vec<Vec<&'a Point>>, Error> {
+//     let points_len = points.len();
+//     let centers_len = center_points.len();
+
+//     let (start, end) = user_range(points_len, user_id, user_max)?;
+//     let mut teams = vec![vec![]; centers_len];
+//     let mut i = 0;
+//     for p in points[start..=end].iter() {
+//         i = i + 1;
+//         let (index, _) = p.min_dis_point(center_points)?;
+//         teams[index].push(p);
+//     }
+//     Ok(teams)
+// }
+// /// 計算新中心點群
+// pub fn center_points(
+//     team_points: &[Vec<Point>],
+//     user_id: usize,
+//     user_max: usize
+// ) -> Result<Vec<Point>, Error> {
+//     let centers_len = team_points.len();
+//     let (start, end) = user_range(centers_len, user_id, user_max)?;
+//     let mut center_points = Vec::with_capacity(centers_len);
+//     for i in start..=end {
+//         center_points[i] = Point::center_point(&team_points[i])?;
+//     }
+//     Ok(center_points)
+// }
