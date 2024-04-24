@@ -247,6 +247,7 @@ mod tests {
     #[test]
     /// 測試新建是否成功
     fn new_keams_task() {
+        // 設定keams_task值
         let points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
         let points_center = vec![Point::new(0.0, -1.0)];
         let keams_task = KeamsTask::new(0, 1, points, points_center);
@@ -256,12 +257,12 @@ mod tests {
         let ans_step = 0;
         let ans_points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
         let ans_points_center = vec![Point::new(0.0, -1.0)];
-        let ans_points_team: Vec<Vec<&Point>> = vec![vec![]];
+        let ans_points_team: Vec<Vec<usize>> = vec![vec![]];
         assert_eq!(ans_user_id, keams_task.user_id());
         assert_eq!(ans_user_max, keams_task.user_max());
         assert_eq!(ans_step, keams_task.step());
-        // assert_eq!(ans_points, keams_task.points());
-        // assert_eq!(ans_points_center, keams_task.points_center());
-        // assert_eq!(ans_points_team, keams_task.points_team());
+        assert_eq!(ans_points, *keams_task.points());
+        assert_eq!(ans_points_center, *keams_task.points_center());
+        assert_eq!(ans_points_team, *keams_task.points_team());
     }
 }
