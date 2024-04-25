@@ -1,3 +1,4 @@
+use std::collections::btree_map::Range;
 use std::{
     fmt,
     collections::HashSet,
@@ -179,29 +180,23 @@ impl KeamsTask {
         }
         Ok(())
     }
+    /// 計算中心點
+    pub fn center(&mut self) -> Result<(), Error> {
+        self.points_center = vec![];
+        for (index, points_index) in self.points_team[self.team_ops_range.range()].iter().enumerate() {
+            let mut center_point = Point::new(0.0, 0.0);
+            let len = points_index.len();
+            for i in points_index {
+                let p = &self.points[*i];
+                center_point = center_point + p;
+            }
+            let center_point = Point::new(center_point.x()/len as f64, center_point.y()/len as f64);
+            self.points_center[index] = center_point;
+        }
+        Ok(())
+    }
 }
 
-
-// /// 分群
-// pub fn cluster<'a>(
-//     points: &'a [Point],
-//     center_points: &[Point],
-//     user_id: usize,
-//     user_max: usize
-// ) -> Result<Vec<Vec<&'a Point>>, Error> {
-//     let points_len = points.len();
-//     let centers_len = center_points.len();
-
-//     let (start, end) = user_range(points_len, user_id, user_max)?;
-//     let mut teams = vec![vec![]; centers_len];
-//     let mut i = 0;
-//     for p in points[start..=end].iter() {
-//         i = i + 1;
-//         let (index, _) = p.min_dis_point(center_points)?;
-//         teams[index].push(p);
-//     }
-//     Ok(teams)
-// }
 // /// 計算新中心點群
 // pub fn center_points(
 //     team_points: &[Vec<Point>],
