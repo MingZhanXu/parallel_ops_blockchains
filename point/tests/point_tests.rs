@@ -26,6 +26,29 @@ mod tests {
         assert_eq!(ans, add_point);
     }
     #[test]
+    fn div_point_point() {
+        let point1 = Point::new(8.0, 6.0);
+        let point2 = Point::new(2.0, 3.0);
+        let div_point = point1 / point2;
+        let ans = Point::new(4.0, 2.0);
+        assert_eq!(ans, div_point);
+    }
+    #[test]
+    fn div_point_point_ref() {
+        let point1 = Point::new(8.0, 6.0);
+        let point2 = Point::new(2.0, 3.0);
+        let div_point = point1 / &point2;
+        let ans = Point::new(4.0, 2.0);
+        assert_eq!(ans, div_point);
+    }
+    #[test]
+    fn div_point_f64() {
+        let point1 = Point::new(8.0, 6.0);
+        let div_point = point1 / 2.0;
+        let ans = Point::new(4.0, 3.0);
+        assert_eq!(ans, div_point);
+    }
+    #[test]
     fn dis_point() {
         let point1 = Point::new(0.0, 0.0);
         let point2 = Point::new(3.0, 4.0);

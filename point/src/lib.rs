@@ -1,8 +1,14 @@
 // use std::process::Output;
 use std::{
-    fmt,
-    ops::Add,
-    hash::{Hash, Hasher},
+    fmt, 
+    hash::{
+        Hash,
+        Hasher
+    }, 
+    ops::{
+        Add,
+        Div
+    }
 };
 #[derive(Debug)]
 pub enum Error {
@@ -75,14 +81,32 @@ impl Point {
 }
 impl Add for Point {
     type Output = Point;
-    fn add(self, other: Point) -> Point {
-        Point::new(self.x + other.x, self.y + other.y)
+    fn add(self, other: Point) -> Self::Output {
+        Point::new(self.x() + other.x(), self.y() + other.y())
     }
 }
 impl Add<&Point> for Point {
     type Output = Point;
-    fn add(self, other: &Point) -> Point {
-        Point::new(self.x + other.x, self.y + other.y)
+    fn add(self, other: &Self) -> Self::Output {
+        Point::new(self.x() + other.x(), self.y() + other.y())
+    }
+}
+impl Div for Point {
+    type Output = Point;
+    fn div(self, rhs: Self) -> Self::Output {
+        Point::new(self.x() / rhs.x(), self.y() / rhs.y())
+    }
+}
+impl Div<&Point>  for Point {
+    type Output = Point;
+    fn div(self, rhs: &Self) -> Self::Output {
+        Point::new(self.x() / rhs.x(), self.y() / rhs.y())
+    }
+}
+impl Div<f64> for Point {
+    type Output = Point;
+    fn div(self, rhs: f64) -> Self::Output {
+        Point::new(self.x() / rhs, self.y() / rhs)
     }
 }
 impl PartialEq for Point {
