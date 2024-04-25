@@ -98,7 +98,12 @@ impl OpsRange {
         }
         let range = len as f64 / num_max as f64;
         let start = range * num as f64;
-        let end = (start + range) as usize;
+        let end = 
+            if num < num_max - 1 {
+                (start + range) as usize
+            } else {
+                len
+            };
         let start = start as usize;
         Ok(OpsRange{start, end})
     }
