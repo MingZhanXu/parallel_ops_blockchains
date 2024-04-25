@@ -68,6 +68,18 @@ mod tests {
         }
     }
     #[test]
+    /// len < num_max 是否會回傳錯誤    
+    fn ops_range_len_smaller_num_max() {
+        let len = 3;
+        let num = 0;
+        let num_max = 4;
+        let ans = "KeamsError: 輸入長度錯誤(len: 3 < num_max: 4)".to_string();
+        match OpsRange::new(len, num, num_max) {
+            Ok(_) => panic!("不該正確"),
+            Err(err) => assert_eq!(ans, err.to_string()),
+        }
+    }
+    #[test]
     /// num_max 為 0 是否會回傳錯誤
     fn ops_range_num_max_zero() {
         let len = 1;
@@ -82,7 +94,7 @@ mod tests {
     #[test]
     /// num == num_max 是否會回傳錯誤
     fn ops_range_num_equal_num_max() {
-        let len = 1;
+        let len = 3;
         let num = 3;
         let num_max = 3;
         let ans = "KeamsError: 輸入長度錯誤(num: 3 >= num_max: 3)".to_string();
@@ -94,7 +106,7 @@ mod tests {
     #[test]
     /// num > num_max 是否會回傳錯誤
     fn ops_range_num_greater_num_max() {
-        let len = 1;
+        let len = 3;
         let num = 4;
         let num_max = 3;
         let ans = "KeamsError: 輸入長度錯誤(num: 4 >= num_max: 3)".to_string();
@@ -255,29 +267,35 @@ mod tests {
             Point::new(1.0, -1.0),
             Point::new(2.0, -2.0),
             Point::new(3.0, -3.0),
+
             Point::new(4.0, -4.0),
             Point::new(5.0, -5.0),
             Point::new(6.0, -6.0),
+            
             Point::new(7.0, -7.0),
             Point::new(8.0, -8.0),
             Point::new(9.0, -9.0),
         ];
         let points_center = vec![
             Point::new(2.0, -2.0),
-            Point::new(7.0, -7.0),
+            Point::new(5.0, -5.0),
+            Point::new(8.0, -8.0),
         ];
         let ans = vec![
             vec![
                 vec![0, 1, 2],
                 vec![],
+                vec![],
             ],
             vec![
-                vec![3, 4],
-                vec![5],
+                vec![3],
+                vec![4, 5],
+                vec![],
             ],
             vec![
                 vec![],
-                vec![6, 7, 8, 9],
+                vec![6],
+                vec![7, 8, 9],
             ]
         ];
         for id in user_id {

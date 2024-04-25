@@ -1,4 +1,3 @@
-use std::collections::btree_map::Range;
 use std::{
     fmt,
     collections::HashSet,
@@ -77,25 +76,30 @@ impl OpsRange {
         num: usize,
         num_max: usize
     ) -> Result<OpsRange, Error> {
+        // 資料為空
         if len == 0 {
             let err_msg = format!("輸入長度錯誤(len == 0)");
             return Err(Error::KeamsError(err_msg));
-        } else if num_max == 0 {
+        }
+        // 不可分配
+        else if len < num_max {
+            let err_msg = format!("輸入長度錯誤(len: {} < num_max: {})", len, num_max);
+            return Err(Error::KeamsError(err_msg));
+        }
+        // 除以零
+        else if num_max == 0 {
             let err_msg = format!("輸入長度錯誤(num_max == 0)");
             return Err(Error::KeamsError(err_msg));
         }
-        let range = len / num_max;
-        let start = range * num;
-        let max = num_max - 1;
-        let end;
-        if num == max {
-            end = len;
-        } else if num < max {
-            end = start + range;
-        } else {
+        // index 比總量多
+        else if num >=  num_max {
             let err_msg = format!("輸入長度錯誤(num: {} >= num_max: {})", num, num_max);
             return Err(Error::KeamsError(err_msg));
         }
+        let range = len as f64 / num_max as f64;
+        let start = range * num as f64;
+        let end = (start + range) as usize;
+        let start = start as usize;
         Ok(OpsRange{start, end})
     }
     pub fn start(&self) -> usize {
@@ -190,7 +194,7 @@ impl KeamsTask {
                 let p = &self.points[*i];
                 center_point = center_point + p;
             }
-            let center_point = Point::new(center_point.x()/len as f64, center_point.y()/len as f64);
+            let center_point = center_point / len as f64;
             self.points_center[index] = center_point;
         }
         Ok(())
