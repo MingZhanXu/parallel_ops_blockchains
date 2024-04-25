@@ -83,14 +83,14 @@ impl OpsRange {
             let err_msg = format!("輸入長度錯誤(num_max == 0)");
             return Err(Error::KeamsError(err_msg));
         }
-        
         let range = len / num_max;
         let start = range * num;
+        let max = num_max - 1;
         let end;
-        if num == num_max - 1 {
-            end = len - 1;
-        } else if num < num_max {
-            end = start + range - 1;
+        if num == max {
+            end = len;
+        } else if num < max {
+            end = start + range;
         } else {
             let err_msg = format!("輸入長度錯誤(num: {} >= num_max: {})", num, num_max);
             return Err(Error::KeamsError(err_msg));
@@ -102,6 +102,9 @@ impl OpsRange {
     }
     pub fn end(&self) -> usize {
         self.end
+    }
+    pub fn range(&self) -> std::ops::Range<usize> {
+        self.start..self.end
     }
 }
 
@@ -165,6 +168,16 @@ impl KeamsTask {
     }
     pub fn team_ops_range(&self) -> &OpsRange {
         &self.team_ops_range
+    }
+
+    /// 分群
+    pub fn cluster(&mut self) -> Result<(), Error> {
+        self.points_team = vec![vec![]; self.points_center.len()];
+        for (i,p) in self.points[self.center_ops_range.range()].iter().enumerate() {
+            let (index, _) = p.min_dis_point(self.points_center())?;
+            self.points_team[index].push(self.center_ops_range.start() + i);
+        }
+        Ok(())
     }
 }
 
