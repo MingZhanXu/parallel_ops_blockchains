@@ -2,6 +2,21 @@
 mod tests {
     use keams::*;
     use point::Point;
+    /// 回傳一個 points ， reset 用
+    fn points() -> Vec<Point> {
+        vec![
+            Point::new(0.0, -0.0),
+            Point::new(1.0, -1.0),
+            Point::new(2.0, -2.0),
+            Point::new(3.0, -3.0),
+            Point::new(4.0, -4.0),
+            Point::new(5.0, -5.0),
+            Point::new(6.0, -6.0),
+            Point::new(7.0, -7.0),
+            Point::new(8.0, -8.0),
+            Point::new(9.0, -9.0),
+        ]
+    }
     #[test]
     /// 測試是否能產生符合範圍的點
     fn rand_one_point() {
@@ -33,18 +48,7 @@ mod tests {
     fn rand_center_different() {
         let simulation = Simulation;
         let centers_len = 4;
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let centers = simulation.rand_centers(centers_len, &points);
         for (i, c1) in centers.iter().enumerate() {
             for (j, c2) in centers.iter().enumerate() {
@@ -182,18 +186,7 @@ mod tests {
     /// 測試分群，最max_user為1時是否回傳正確的資料
     /// user_id = 0 point 0~9
     fn cluster_one_user_ok() {
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let points_center = vec![
             Point::new(2.0, -2.0),
             Point::new(7.0, -7.0),
@@ -219,18 +212,7 @@ mod tests {
     fn cluster_two_user_ok() {
         let user_max = 2;
         let user_id = [0, 1];
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let points_center = vec![
             Point::new(2.0, -2.0),
             Point::new(7.0, -7.0),
@@ -262,20 +244,7 @@ mod tests {
     fn cluster_three_user_ok() {
         let user_max = 3;
         let user_id = [0, 1, 2];
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let points_center = vec![
             Point::new(2.0, -2.0),
             Point::new(5.0, -5.0),
