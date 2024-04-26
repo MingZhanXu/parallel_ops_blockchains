@@ -182,7 +182,7 @@ impl KeamsTask {
 
     /// 分群
     pub fn cluster(&mut self) -> Result<(), Error> {
-        self.points_team = vec![vec![]; self.points_center.len()];
+        self.points_team.truncate(self.points_team.len());
         for (i,p) in self.points[self.center_ops_range.range()].iter().enumerate() {
             let (index, _) = p.min_dis_point(self.points_center())?;
             self.points_team[index].push(self.center_ops_range.start() + i);
@@ -191,7 +191,8 @@ impl KeamsTask {
     }
     /// 計算中心點
     pub fn center(&mut self) -> Result<(), Error> {
-        self.points_center = vec![];
+        self.points_center.truncate(self.points_center.len());
+        let start = self.team_ops_range.start();
         for (index, points_index) in self.points_team[self.team_ops_range.range()].iter().enumerate() {
             let mut center_point = Point::new(0.0, 0.0);
             let len = points_index.len();
@@ -200,23 +201,8 @@ impl KeamsTask {
                 center_point = center_point + p;
             }
             let center_point = center_point / len as f64;
-            self.points_center[index] = center_point;
+            self.points_center[start + index] = center_point;
         }
         Ok(())
     }
 }
-
-// /// 計算新中心點群
-// pub fn center_points(
-//     team_points: &[Vec<Point>],
-//     user_id: usize,
-//     user_max: usize
-// ) -> Result<Vec<Point>, Error> {
-//     let centers_len = team_points.len();
-//     let (start, end) = user_range(centers_len, user_id, user_max)?;
-//     let mut center_points = Vec::with_capacity(centers_len);
-//     for i in start..=end {
-//         center_points[i] = Point::center_point(&team_points[i])?;
-//     }
-//     Ok(center_points)
-// }

@@ -277,5 +277,45 @@ mod tests {
             assert_eq!(ans[id], *team);
         }
     }
-    
+    #[test]
+    /// 測試尋找中心點是否正確
+    fn cneter_one_user_correct() {
+        let user_id = 0;
+        let user_max = 1;
+        let points = points();
+        let points_center = vec![Point::new(0.0, 0.0)];
+        let ans = vec![Point::new(4.5, -4.5)];
+        let mut task = 
+            KeamsTask::new(user_id, user_max, points, points_center).
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.cluster().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.center().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        assert_eq!(ans, *task.points_center());
+
+    }
+    #[test]
+    fn cneter_one_user_two_center_correct() {
+        let user_id = 0;
+        let user_max = 1;
+        let points = points();
+        let points_center = vec![
+            Point::new(1.0, -1.0),
+            Point::new(4.0, -4.0)
+            ];
+        let ans = vec![
+            Point::new(1.0, -1.0),
+            Point::new(6.0, -6.0)
+            ];
+        let mut task = 
+        KeamsTask::new(user_id, user_max, points, points_center).
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.cluster().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.center().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        assert_eq!(ans, *task.points_center());
+    }
+
  }
