@@ -1,4 +1,3 @@
-use std::collections::btree_map::Range;
 use std::{
     fmt,
     collections::HashSet,
@@ -77,25 +76,35 @@ impl OpsRange {
         num: usize,
         num_max: usize
     ) -> Result<OpsRange, Error> {
+        // 資料為空
         if len == 0 {
             let err_msg = format!("輸入長度錯誤(len == 0)");
             return Err(Error::KeamsError(err_msg));
-        } else if num_max == 0 {
+        }
+        // 不可分配
+        else if len < num_max {
+            let err_msg = format!("輸入長度錯誤(len: {} < num_max: {})", len, num_max);
+            return Err(Error::KeamsError(err_msg));
+        }
+        // 除以零
+        else if num_max == 0 {
             let err_msg = format!("輸入長度錯誤(num_max == 0)");
             return Err(Error::KeamsError(err_msg));
         }
-        let range = len / num_max;
-        let start = range * num;
-        let max = num_max - 1;
-        let end;
-        if num == max {
-            end = len;
-        } else if num < max {
-            end = start + range;
-        } else {
+        // index 比總量多
+        else if num >=  num_max {
             let err_msg = format!("輸入長度錯誤(num: {} >= num_max: {})", num, num_max);
             return Err(Error::KeamsError(err_msg));
         }
+        let range = len as f64 / num_max as f64;
+        let start = range * num as f64;
+        let end = 
+            if num < num_max - 1 {
+                (start + range) as usize
+            } else {
+                len
+            };
+        let start = start as usize;
         Ok(OpsRange{start, end})
     }
     pub fn start(&self) -> usize {
@@ -109,22 +118,74 @@ impl OpsRange {
     }
 }
 
+#[derive(Debug)]
+pub struct Team {
+    len: usize,
+    data: Vec<Vec<usize>>,
+}
+impl Team {
+    pub fn new(len: usize) -> Team {
+        Team {
+            len,
+            data: vec![vec![]; len],
+        }
+    }
+    pub fn new_set_data(data: Vec<Vec<usize>>) -> Team{
+        Team {
+            len: data.len(),
+            data
+        }
+    }
+    pub fn get(&self, x: usize, y: usize) -> usize {
+        self.data[x][y]
+    }
+    pub fn data(&self) -> &Vec<Vec<usize>> {
+        &self.data
+    }
+    pub fn push(&mut self, index:usize , data: usize) {
+        self.data[index].push(data);
+    }
+    pub fn len(&self) -> usize {
+        self.len
+    }
+    pub fn iter(&self, range: std::ops::Range<usize>) -> std::slice::Iter<Vec<usize>>{
+        self.data[range].iter()
+    }
+    
+    fn truncate(&mut self) {
+        self.data.truncate(self.len());
+    }
+    pub fn merge(&mut self, others: &Vec<Self>) {
+        for other in others {
+            for (v1, v2) in self.data.iter_mut().zip(other.data()) {
+                v1.extend(v2);
+            }
+        }
+    }
+}
+
+impl PartialEq for Team {
+    fn eq(&self, other: &Self) -> bool {
+        self.data == other.data && self.len == other.len
+    }
+}
+impl Eq for Team {}
 pub struct KeamsTask {
     user_id: usize,
     user_max: usize,
     step: usize,
     points: Vec<Point>,
-    points_center: Vec<Point>,
-    center_ops_range: OpsRange,
-    points_team: Vec<Vec<usize>>,
-    team_ops_range: OpsRange,
+    points_center: Vec<Option<Point>>,
+    center_range: OpsRange,
+    points_team: Team,
+    team_range: OpsRange,
 }
 impl KeamsTask {
     pub fn new(
         user_id: usize,
         user_max: usize,
         points: Vec<Point>,
-        points_center: Vec<Point>,
+        points_center: Vec<Option<Point>>,
     ) -> Result<KeamsTask, Error> {
         if user_id >= user_max{
             let err_msg = format!("輸入長度錯誤(user_id: {} >= user_max: {})", user_id, user_max);
@@ -132,17 +193,17 @@ impl KeamsTask {
         }
         let center_len = points.len();
         let team_len  = points_center.len();
-        let center_ops_range = OpsRange::new(center_len, user_id, user_max)?;
-        let team_ops_range = OpsRange::new(team_len, user_id, user_max)?;
+        let center_range = OpsRange::new(center_len, user_id, user_max)?;
+        let team_range = OpsRange::new(team_len, user_id, user_max)?;
         let keams_task = KeamsTask {
             user_id,
             user_max,
             step: 0,
             points,
-            center_ops_range,
+            center_range,
             points_center,
-            team_ops_range,
-            points_team: vec![vec![]; team_len],
+            team_range,
+            points_team: Team::new(team_len),
         };
         Ok(keams_task)
     }
@@ -155,59 +216,47 @@ impl KeamsTask {
     pub fn points(&self) -> &Vec<Point> {
         &self.points
     }
-    pub fn points_center(&self) -> &Vec<Point> {
+    pub fn points_center(&self) -> &Vec<Option<Point>> {
         &self.points_center
     }
-    pub fn points_team(&self) -> &Vec<Vec<usize>> {
+    pub fn points_team(&self) -> &Team {
         &self.points_team
     }
     pub fn step(&self) -> usize {
         self.step
     }
-    pub fn center_ops_range(&self) -> &OpsRange {
-        &self.center_ops_range
+    pub fn center_range(&self) -> &OpsRange {
+        &self.center_range
     }
-    pub fn team_ops_range(&self) -> &OpsRange {
-        &self.team_ops_range
+    pub fn team_range(&self) -> &OpsRange {
+        &self.team_range
     }
 
     /// 分群
     pub fn cluster(&mut self) -> Result<(), Error> {
-        self.points_team = vec![vec![]; self.points_center.len()];
-        for (i,p) in self.points[self.center_ops_range.range()].iter().enumerate() {
+        self.points_team.truncate();
+        for (i,p) in self.points[self.center_range.range()].iter().enumerate() {
             let (index, _) = p.min_dis_point(self.points_center())?;
-            self.points_team[index].push(self.center_ops_range.start() + i);
+            let data = self.center_range.start() + i;
+            self.points_team.push(index, data);
         }
         Ok(())
     }
     /// 計算中心點
     pub fn center(&mut self) -> Result<(), Error> {
-        self.points_center = vec![];
-        for (index, points_index) in self.points_team[self.team_ops_range.range()].iter().enumerate() {
+        self.points_center.truncate(self.points_center.len());
+        let start = self.team_range.start();
+        let range = self.team_range.range();
+        for (index, points_index) in self.points_team.iter(range).enumerate() {
             let mut center_point = Point::new(0.0, 0.0);
             let len = points_index.len();
             for i in points_index {
                 let p = &self.points[*i];
                 center_point = center_point + p;
             }
-            let center_point = Point::new(center_point.x()/len as f64, center_point.y()/len as f64);
-            self.points_center[index] = center_point;
+            let center_point = center_point / len as f64;
+            self.points_center[start + index] = Some(center_point);
         }
         Ok(())
     }
 }
-
-// /// 計算新中心點群
-// pub fn center_points(
-//     team_points: &[Vec<Point>],
-//     user_id: usize,
-//     user_max: usize
-// ) -> Result<Vec<Point>, Error> {
-//     let centers_len = team_points.len();
-//     let (start, end) = user_range(centers_len, user_id, user_max)?;
-//     let mut center_points = Vec::with_capacity(centers_len);
-//     for i in start..=end {
-//         center_points[i] = Point::center_point(&team_points[i])?;
-//     }
-//     Ok(center_points)
-// }

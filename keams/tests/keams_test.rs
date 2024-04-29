@@ -2,6 +2,21 @@
 mod tests {
     use keams::*;
     use point::Point;
+    /// 回傳一個 points ， reset 用
+    fn points() -> Vec<Point> {
+        vec![
+            Point::new(0.0, -0.0),
+            Point::new(1.0, -1.0),
+            Point::new(2.0, -2.0),
+            Point::new(3.0, -3.0),
+            Point::new(4.0, -4.0),
+            Point::new(5.0, -5.0),
+            Point::new(6.0, -6.0),
+            Point::new(7.0, -7.0),
+            Point::new(8.0, -8.0),
+            Point::new(9.0, -9.0),
+        ]
+    }
     #[test]
     /// 測試是否能產生符合範圍的點
     fn rand_one_point() {
@@ -33,18 +48,7 @@ mod tests {
     fn rand_center_different() {
         let simulation = Simulation;
         let centers_len = 4;
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let centers = simulation.rand_centers(centers_len, &points);
         for (i, c1) in centers.iter().enumerate() {
             for (j, c2) in centers.iter().enumerate() {
@@ -68,6 +72,18 @@ mod tests {
         }
     }
     #[test]
+    /// len < num_max 是否會回傳錯誤    
+    fn ops_range_len_smaller_num_max() {
+        let len = 3;
+        let num = 0;
+        let num_max = 4;
+        let ans = "KeamsError: 輸入長度錯誤(len: 3 < num_max: 4)".to_string();
+        match OpsRange::new(len, num, num_max) {
+            Ok(_) => panic!("不該正確"),
+            Err(err) => assert_eq!(ans, err.to_string()),
+        }
+    }
+    #[test]
     /// num_max 為 0 是否會回傳錯誤
     fn ops_range_num_max_zero() {
         let len = 1;
@@ -82,7 +98,7 @@ mod tests {
     #[test]
     /// num == num_max 是否會回傳錯誤
     fn ops_range_num_equal_num_max() {
-        let len = 1;
+        let len = 3;
         let num = 3;
         let num_max = 3;
         let ans = "KeamsError: 輸入長度錯誤(num: 3 >= num_max: 3)".to_string();
@@ -94,7 +110,7 @@ mod tests {
     #[test]
     /// num > num_max 是否會回傳錯誤
     fn ops_range_num_greater_num_max() {
-        let len = 1;
+        let len = 3;
         let num = 4;
         let num_max = 3;
         let ans = "KeamsError: 輸入長度錯誤(num: 4 >= num_max: 3)".to_string();
@@ -141,6 +157,34 @@ mod tests {
     }
 
     #[test]
+    /// 測試 team 合併
+    fn merge_team() {
+        let data1 = vec![
+            vec![0, 1, 2],
+            vec![9, 8, 7],
+        ];
+        let data2 = vec![
+            vec![3, 4, 5],
+            vec![6, 5, 4],
+        ];
+        let data3 = vec![
+            vec![2, 1, 0],
+            vec![7, 8, 9],
+        ];
+        let mut team1 = Team::new_set_data(data1);
+        let team2 = Team::new_set_data(data2);
+        let team3 = Team::new_set_data(data3);
+        let teams = vec![team2, team3];
+        team1.merge(&teams);
+        let ans1 = vec![
+            vec![0, 1, 2, 3, 4, 5, 2, 1, 0],
+            vec![9, 8, 7, 6, 5, 4, 7, 8, 9],
+        ];
+        assert_eq!(ans1, *team1.data());
+    }
+    
+
+    #[test]
     /// 測試新建是否成功
     fn new_keams_task() {
         let points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
@@ -153,7 +197,7 @@ mod tests {
                 let ans_step = 0;
                 let ans_points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
                 let ans_points_center = vec![Point::new(0.0, -1.0)];
-                let ans_points_team: Vec<Vec<usize>> = vec![vec![]];
+                let ans_points_team = Team::new(1);
                 assert_eq!(ans_user_id, keams_task.user_id());
                 assert_eq!(ans_user_max, keams_task.user_max());
                 assert_eq!(ans_step, keams_task.step());
@@ -170,26 +214,16 @@ mod tests {
     /// 測試分群，最max_user為1時是否回傳正確的資料
     /// user_id = 0 point 0~9
     fn cluster_one_user_ok() {
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let points_center = vec![
             Point::new(2.0, -2.0),
             Point::new(7.0, -7.0),
         ];
-        let ans = vec![
+        let data = vec![
             vec![0, 1, 2, 3, 4],
             vec![5, 6, 7, 8, 9],
         ];
+        let ans = Team::new_set_data(data);
         let user_max = 1;
         let user_id = 0;
         let mut task = 
@@ -207,23 +241,12 @@ mod tests {
     fn cluster_two_user_ok() {
         let user_max = 2;
         let user_id = [0, 1];
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let points_center = vec![
             Point::new(2.0, -2.0),
             Point::new(7.0, -7.0),
         ];
-        let ans = vec![
+        let data = vec![
             vec![
                 vec![0, 1, 2, 3, 4],
                 vec![],
@@ -232,6 +255,10 @@ mod tests {
                 vec![],
                 vec![5, 6, 7, 8, 9],
             ]
+        ];
+        let ans = vec![
+            Team::new_set_data(data[0].clone()),
+            Team::new_set_data(data[1].clone())
         ];
         for id in user_id {
             let mut task = 
@@ -250,35 +277,33 @@ mod tests {
     fn cluster_three_user_ok() {
         let user_max = 3;
         let user_id = [0, 1, 2];
-        let points = vec![
-            Point::new(0.0, -0.0),
-            Point::new(1.0, -1.0),
-            Point::new(2.0, -2.0),
-            Point::new(3.0, -3.0),
-            Point::new(4.0, -4.0),
-            Point::new(5.0, -5.0),
-            Point::new(6.0, -6.0),
-            Point::new(7.0, -7.0),
-            Point::new(8.0, -8.0),
-            Point::new(9.0, -9.0),
-        ];
+        let points = points();
         let points_center = vec![
             Point::new(2.0, -2.0),
-            Point::new(7.0, -7.0),
+            Point::new(5.0, -5.0),
+            Point::new(8.0, -8.0),
         ];
-        let ans = vec![
+        let data = vec![
             vec![
                 vec![0, 1, 2],
                 vec![],
+                vec![],
             ],
             vec![
-                vec![3, 4],
-                vec![5],
+                vec![3],
+                vec![4, 5],
+                vec![],
             ],
             vec![
                 vec![],
-                vec![6, 7, 8, 9],
+                vec![6],
+                vec![7, 8, 9],
             ]
+        ];
+        let ans = vec![
+            keams::Team::new_set_data(data[0].clone()),
+            keams::Team::new_set_data(data[1].clone()),
+            keams::Team::new_set_data(data[2].clone()),
         ];
         for id in user_id {
             let mut task = 
@@ -290,5 +315,45 @@ mod tests {
             assert_eq!(ans[id], *team);
         }
     }
-    
+    #[test]
+    /// 測試尋找中心點是否正確
+    fn cneter_one_user_correct() {
+        let user_id = 0;
+        let user_max = 1;
+        let points = points();
+        let points_center = vec![Point::new(0.0, 0.0)];
+        let ans = vec![Point::new(4.5, -4.5)];
+        let mut task = 
+            KeamsTask::new(user_id, user_max, points, points_center).
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.cluster().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.center().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        assert_eq!(ans, *task.points_center());
+
+    }
+    #[test]
+    fn cneter_one_user_two_center_correct() {
+        let user_id = 0;
+        let user_max = 1;
+        let points = points();
+        let points_center = vec![
+            Point::new(1.0, -1.0),
+            Point::new(4.0, -4.0)
+            ];
+        let ans = vec![
+            Point::new(1.0, -1.0),
+            Point::new(6.0, -6.0)
+            ];
+        let mut task = 
+        KeamsTask::new(user_id, user_max, points, points_center).
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.cluster().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        task.center().
+            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        assert_eq!(ans, *task.points_center());
+    }
+
  }
