@@ -61,8 +61,8 @@ impl Point {
     /// 回傳最近點
     pub fn min_dis_point<'a>(
         &self,
-        points: &'a [Point]
-    ) -> Result<(usize, &'a Point), Error> {
+        points: &'a [Option<Point>]
+    ) -> Result<(usize, &'a Option<Point>), Error> {
         if points.is_empty() {
             let error_msg = "Points vector is empty".to_string();
             return Err(Error::PointError(error_msg));
@@ -70,11 +70,16 @@ impl Point {
         let mut min_dis = std::f64::MAX;
         let mut nearest_point = (0, &points[0]);
         for (i, c) in points.iter().enumerate() {
-            let dis = self.dis(c);
-            if min_dis >= dis {
-                min_dis = dis;
-                nearest_point = (i, c);
-            }
+            match c {
+                Some(sc) => {
+                    let dis = self.dis(sc);
+                    if min_dis >= dis {
+                        min_dis = dis;
+                        nearest_point = (i, c);
+                    }
+                }
+                None => continue,
+            };
         }
         Ok(nearest_point)
     }
