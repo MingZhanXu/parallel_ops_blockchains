@@ -126,14 +126,14 @@ pub struct Team {
 impl Team {
     pub fn new(len: usize) -> Team {
         Team {
-            len: len,
+            len,
             data: vec![vec![]; len],
         }
     }
     pub fn new_set_data(data: Vec<Vec<usize>>) -> Team{
         Team {
             len: data.len(),
-            data: data
+            data
         }
     }
     pub fn get(&self, x: usize, y: usize) -> usize {
@@ -155,6 +155,13 @@ impl Team {
     fn truncate(&mut self) {
         self.data.truncate(self.len());
     }
+    pub fn merge(&mut self, others: &Vec<Self>) {
+        for other in others {
+            for (v1, v2) in self.data.iter_mut().zip(other.data()) {
+                v1.extend(v2);
+            }
+        }
+    }
 }
 
 impl PartialEq for Team {
@@ -168,7 +175,7 @@ pub struct KeamsTask {
     user_max: usize,
     step: usize,
     points: Vec<Point>,
-    points_center: Vec<Point>,
+    points_center: Vec<Option<Point>>,
     center_range: OpsRange,
     points_team: Team,
     team_range: OpsRange,
@@ -178,7 +185,7 @@ impl KeamsTask {
         user_id: usize,
         user_max: usize,
         points: Vec<Point>,
-        points_center: Vec<Point>,
+        points_center: Vec<Option<Point>>,
     ) -> Result<KeamsTask, Error> {
         if user_id >= user_max{
             let err_msg = format!("輸入長度錯誤(user_id: {} >= user_max: {})", user_id, user_max);
@@ -209,7 +216,7 @@ impl KeamsTask {
     pub fn points(&self) -> &Vec<Point> {
         &self.points
     }
-    pub fn points_center(&self) -> &Vec<Point> {
+    pub fn points_center(&self) -> &Vec<Option<Point>> {
         &self.points_center
     }
     pub fn points_team(&self) -> &Team {
@@ -248,7 +255,7 @@ impl KeamsTask {
                 center_point = center_point + p;
             }
             let center_point = center_point / len as f64;
-            self.points_center[start + index] = center_point;
+            self.points_center[start + index] = Some(center_point);
         }
         Ok(())
     }

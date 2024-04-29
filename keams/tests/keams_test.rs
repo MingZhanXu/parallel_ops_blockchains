@@ -157,6 +157,34 @@ mod tests {
     }
 
     #[test]
+    /// 測試 team 合併
+    fn merge_team() {
+        let data1 = vec![
+            vec![0, 1, 2],
+            vec![9, 8, 7],
+        ];
+        let data2 = vec![
+            vec![3, 4, 5],
+            vec![6, 5, 4],
+        ];
+        let data3 = vec![
+            vec![2, 1, 0],
+            vec![7, 8, 9],
+        ];
+        let mut team1 = Team::new_set_data(data1);
+        let team2 = Team::new_set_data(data2);
+        let team3 = Team::new_set_data(data3);
+        let teams = vec![team2, team3];
+        team1.merge(&teams);
+        let ans1 = vec![
+            vec![0, 1, 2, 3, 4, 5, 2, 1, 0],
+            vec![9, 8, 7, 6, 5, 4, 7, 8, 9],
+        ];
+        assert_eq!(ans1, *team1.data());
+    }
+    
+
+    #[test]
     /// 測試新建是否成功
     fn new_keams_task() {
         let points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
