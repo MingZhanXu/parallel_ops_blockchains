@@ -169,7 +169,7 @@ mod tests {
                 let ans_step = 0;
                 let ans_points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
                 let ans_points_center = vec![Point::new(0.0, -1.0)];
-                let ans_points_team: Vec<Vec<usize>> = vec![vec![]];
+                let ans_points_team = Team::new(1);
                 assert_eq!(ans_user_id, keams_task.user_id());
                 assert_eq!(ans_user_max, keams_task.user_max());
                 assert_eq!(ans_step, keams_task.step());
@@ -191,10 +191,11 @@ mod tests {
             Point::new(2.0, -2.0),
             Point::new(7.0, -7.0),
         ];
-        let ans = vec![
+        let data = vec![
             vec![0, 1, 2, 3, 4],
             vec![5, 6, 7, 8, 9],
         ];
+        let ans = Team::new_set_data(data);
         let user_max = 1;
         let user_id = 0;
         let mut task = 
@@ -217,7 +218,7 @@ mod tests {
             Point::new(2.0, -2.0),
             Point::new(7.0, -7.0),
         ];
-        let ans = vec![
+        let data = vec![
             vec![
                 vec![0, 1, 2, 3, 4],
                 vec![],
@@ -226,6 +227,10 @@ mod tests {
                 vec![],
                 vec![5, 6, 7, 8, 9],
             ]
+        ];
+        let ans = vec![
+            Team::new_set_data(data[0].clone()),
+            Team::new_set_data(data[1].clone())
         ];
         for id in user_id {
             let mut task = 
@@ -250,7 +255,7 @@ mod tests {
             Point::new(5.0, -5.0),
             Point::new(8.0, -8.0),
         ];
-        let ans = vec![
+        let data = vec![
             vec![
                 vec![0, 1, 2],
                 vec![],
@@ -266,6 +271,11 @@ mod tests {
                 vec![6],
                 vec![7, 8, 9],
             ]
+        ];
+        let ans = vec![
+            keams::Team::new_set_data(data[0].clone()),
+            keams::Team::new_set_data(data[1].clone()),
+            keams::Team::new_set_data(data[2].clone()),
         ];
         for id in user_id {
             let mut task = 

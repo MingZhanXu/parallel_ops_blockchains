@@ -3,6 +3,7 @@ use std::{
     collections::HashSet,
 };
 
+use rand::seq::index;
 use rand::Rng;
 use point::Point;
 use point::Error as PointError;
@@ -118,6 +119,51 @@ impl OpsRange {
     }
 }
 
+#[derive(Debug)]
+pub struct Team {
+    len: usize,
+    data: Vec<Vec<usize>>,
+}
+impl Team {
+    pub fn new(len: usize) -> Team {
+        Team {
+            len: len,
+            data: vec![vec![]; len],
+        }
+    }
+    pub fn new_set_data(data: Vec<Vec<usize>>) -> Team{
+        Team {
+            len: data.len(),
+            data: data
+        }
+    }
+    pub fn get(&self, x: usize, y: usize) -> usize {
+        self.data[x][y]
+    }
+    pub fn data(&self) -> &Vec<Vec<usize>> {
+        &self.data
+    }
+    pub fn push(&mut self, index:usize , data: usize) {
+        self.data[index].push(data);
+    }
+    pub fn len(&self) -> usize {
+        self.len
+    }
+    pub fn iter(&self, range: std::ops::Range<usize>) -> std::slice::Iter<Vec<usize>>{
+        self.data[range].iter()
+    }
+    
+    fn truncate(&mut self) {
+        self.data.truncate(self.len());
+    }
+}
+
+impl PartialEq for Team {
+    fn eq(&self, other: &Self) -> bool {
+        self.data == other.data && self.len == other.len
+    }
+}
+impl Eq for Team {}
 pub struct KeamsTask {
     user_id: usize,
     user_max: usize,
@@ -125,7 +171,7 @@ pub struct KeamsTask {
     points: Vec<Point>,
     points_center: Vec<Point>,
     center_ops_range: OpsRange,
-    points_team: Vec<Vec<usize>>,
+    points_team: Team,
     team_ops_range: OpsRange,
 }
 impl KeamsTask {
@@ -151,7 +197,7 @@ impl KeamsTask {
             center_ops_range,
             points_center,
             team_ops_range,
-            points_team: vec![vec![]; team_len],
+            points_team: Team::new(team_len),
         };
         Ok(keams_task)
     }
@@ -167,7 +213,7 @@ impl KeamsTask {
     pub fn points_center(&self) -> &Vec<Point> {
         &self.points_center
     }
-    pub fn points_team(&self) -> &Vec<Vec<usize>> {
+    pub fn points_team(&self) -> &Team {
         &self.points_team
     }
     pub fn step(&self) -> usize {
@@ -182,10 +228,11 @@ impl KeamsTask {
 
     /// 分群
     pub fn cluster(&mut self) -> Result<(), Error> {
-        self.points_team.truncate(self.points_team.len());
+        self.points_team.truncate();
         for (i,p) in self.points[self.center_ops_range.range()].iter().enumerate() {
             let (index, _) = p.min_dis_point(self.points_center())?;
-            self.points_team[index].push(self.center_ops_range.start() + i);
+            let data = self.center_ops_range.start() + i;
+            self.points_team.push(index, data);
         }
         Ok(())
     }
@@ -193,7 +240,8 @@ impl KeamsTask {
     pub fn center(&mut self) -> Result<(), Error> {
         self.points_center.truncate(self.points_center.len());
         let start = self.team_ops_range.start();
-        for (index, points_index) in self.points_team[self.team_ops_range.range()].iter().enumerate() {
+        let range = self.team_ops_range.range();
+        for (index, points_index) in self.points_team.iter(range).enumerate() {
             let mut center_point = Point::new(0.0, 0.0);
             let len = points_index.len();
             for i in points_index {
