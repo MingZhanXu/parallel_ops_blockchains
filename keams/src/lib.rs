@@ -3,7 +3,6 @@ use std::{
     collections::HashSet,
 };
 
-use rand::seq::index;
 use rand::Rng;
 use point::Point;
 use point::Error as PointError;
@@ -170,9 +169,9 @@ pub struct KeamsTask {
     step: usize,
     points: Vec<Point>,
     points_center: Vec<Point>,
-    center_ops_range: OpsRange,
+    center_range: OpsRange,
     points_team: Team,
-    team_ops_range: OpsRange,
+    team_range: OpsRange,
 }
 impl KeamsTask {
     pub fn new(
@@ -187,16 +186,16 @@ impl KeamsTask {
         }
         let center_len = points.len();
         let team_len  = points_center.len();
-        let center_ops_range = OpsRange::new(center_len, user_id, user_max)?;
-        let team_ops_range = OpsRange::new(team_len, user_id, user_max)?;
+        let center_range = OpsRange::new(center_len, user_id, user_max)?;
+        let team_range = OpsRange::new(team_len, user_id, user_max)?;
         let keams_task = KeamsTask {
             user_id,
             user_max,
             step: 0,
             points,
-            center_ops_range,
+            center_range,
             points_center,
-            team_ops_range,
+            team_range,
             points_team: Team::new(team_len),
         };
         Ok(keams_task)
@@ -219,19 +218,19 @@ impl KeamsTask {
     pub fn step(&self) -> usize {
         self.step
     }
-    pub fn center_ops_range(&self) -> &OpsRange {
-        &self.center_ops_range
+    pub fn center_range(&self) -> &OpsRange {
+        &self.center_range
     }
-    pub fn team_ops_range(&self) -> &OpsRange {
-        &self.team_ops_range
+    pub fn team_range(&self) -> &OpsRange {
+        &self.team_range
     }
 
     /// 分群
     pub fn cluster(&mut self) -> Result<(), Error> {
         self.points_team.truncate();
-        for (i,p) in self.points[self.center_ops_range.range()].iter().enumerate() {
+        for (i,p) in self.points[self.center_range.range()].iter().enumerate() {
             let (index, _) = p.min_dis_point(self.points_center())?;
-            let data = self.center_ops_range.start() + i;
+            let data = self.center_range.start() + i;
             self.points_team.push(index, data);
         }
         Ok(())
@@ -239,8 +238,8 @@ impl KeamsTask {
     /// 計算中心點
     pub fn center(&mut self) -> Result<(), Error> {
         self.points_center.truncate(self.points_center.len());
-        let start = self.team_ops_range.start();
-        let range = self.team_ops_range.range();
+        let start = self.team_range.start();
+        let range = self.team_range.range();
         for (index, points_index) in self.points_team.iter(range).enumerate() {
             let mut center_point = Point::new(0.0, 0.0);
             let len = points_index.len();
