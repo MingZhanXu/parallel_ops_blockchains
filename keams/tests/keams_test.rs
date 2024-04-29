@@ -188,7 +188,7 @@ mod tests {
     /// 測試新建是否成功
     fn new_keams_task() {
         let points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
-        let points_center = vec![Point::new(0.0, -1.0)];
+        let points_center = vec![Some(Point::new(0.0, -1.0))];
         let keams_task_result = KeamsTask::new(0, 1, points, points_center);
         match keams_task_result {
             Ok(keams_task) => {
@@ -196,7 +196,7 @@ mod tests {
                 let ans_user_max = 1;
                 let ans_step = 0;
                 let ans_points = vec![Point::new(0.0, -0.0), Point::new(1.0, -1.0)];
-                let ans_points_center = vec![Point::new(0.0, -1.0)];
+                let ans_points_center = vec![Some(Point::new(0.0, -1.0))];
                 let ans_points_team = Team::new(1);
                 assert_eq!(ans_user_id, keams_task.user_id());
                 assert_eq!(ans_user_max, keams_task.user_max());
@@ -216,8 +216,8 @@ mod tests {
     fn cluster_one_user_ok() {
         let points = points();
         let points_center = vec![
-            Point::new(2.0, -2.0),
-            Point::new(7.0, -7.0),
+            Some(Point::new(2.0, -2.0)),
+            Some(Point::new(7.0, -7.0)),
         ];
         let data = vec![
             vec![0, 1, 2, 3, 4],
@@ -243,8 +243,8 @@ mod tests {
         let user_id = [0, 1];
         let points = points();
         let points_center = vec![
-            Point::new(2.0, -2.0),
-            Point::new(7.0, -7.0),
+            Some(Point::new(2.0, -2.0)),
+            Some(Point::new(7.0, -7.0)),
         ];
         let data = vec![
             vec![
@@ -279,9 +279,9 @@ mod tests {
         let user_id = [0, 1, 2];
         let points = points();
         let points_center = vec![
-            Point::new(2.0, -2.0),
-            Point::new(5.0, -5.0),
-            Point::new(8.0, -8.0),
+            Some(Point::new(2.0, -2.0)),
+            Some(Point::new(5.0, -5.0)),
+            Some(Point::new(8.0, -8.0)),
         ];
         let data = vec![
             vec![
@@ -321,8 +321,8 @@ mod tests {
         let user_id = 0;
         let user_max = 1;
         let points = points();
-        let points_center = vec![Point::new(0.0, 0.0)];
-        let ans = vec![Point::new(4.5, -4.5)];
+        let points_center = vec![Some(Point::new(0.0, 0.0))];
+        let ans = vec![Some(Point::new(4.5, -4.5))];
         let mut task = 
             KeamsTask::new(user_id, user_max, points, points_center).
             unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
@@ -339,12 +339,12 @@ mod tests {
         let user_max = 1;
         let points = points();
         let points_center = vec![
-            Point::new(1.0, -1.0),
-            Point::new(4.0, -4.0)
+            Some(Point::new(1.0, -1.0)),
+            Some(Point::new(4.0, -4.0))
             ];
         let ans = vec![
-            Point::new(1.0, -1.0),
-            Point::new(6.0, -6.0)
+            Some(Point::new(1.0, -1.0)),
+            Some(Point::new(6.0, -6.0))
             ];
         let mut task = 
         KeamsTask::new(user_id, user_max, points, points_center).
