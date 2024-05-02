@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use std::vec;
     use keams::*;
     use point::Point;
     /// 回傳一個 points ， reset 用
@@ -377,25 +378,40 @@ mod tests {
     }
     #[test]
     fn cneter_one_user_two_center_correct() {
-        let user_id = 0;
-        let user_max = 1;
+        let user_id = vec![0, 1];
+        let user_max = 2;
         let points = points();
         let points_center = Center::new(vec![
-            Some(Point::new(1.0, -1.0)),
-            Some(Point::new(4.0, -4.0))
+            Some(Point::new(2.0, -2.0)),
+            Some(Point::new(5.0, -5.0))
             ]);
         let ans = Center::new(vec![
-            Some(Point::new(1.0, -1.0)),
-            Some(Point::new(6.0, -6.0))
+            Some(Point::new(1.5, -1.5)),
+            Some(Point::new(5.0, -5.0))
             ]);
-        let mut task = 
-        KeamsTask::new(user_id, user_max, points, points_center).
+        let mut tasks = vec![];
+        for id in user_id.clone() {
+            tasks.push(
+                KeamsTask::new(id, user_max, points.clone(), points_center.clone()).
+                    unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err))
+                );
+            tasks[id].cluster().
+                unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
+        }
+        let id = 0;
+        let mut teams = vec![];
+        for other_id in user_id.clone() {
+            if id != other_id {
+                let team = tasks[other_id].points_team().clone();
+                teams.push(team);
+            }
+        }
+        tasks[id].merge_team(&teams);
+        eprintln!("{}\n{:?}\n", id, tasks[id].points_team());
+        tasks[id].center().
             unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
-        task.cluster().
-            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
-        task.center().
-            unwrap_or_else(|err| panic!("不該發生錯誤，錯誤訊息: {}", err));
-        assert_eq!(ans, *task.center_point());
+
+        assert_eq!(ans, *tasks[0].center_point());
     }
 
  }

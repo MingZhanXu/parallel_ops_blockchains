@@ -118,7 +118,7 @@ impl OpsRange {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Team {
     len: usize,
     data: Vec<Vec<usize>>,
@@ -155,7 +155,7 @@ impl Team {
     fn truncate(&mut self) {
         self.data.truncate(self.len());
     }
-    pub fn merge(&mut self, others: &Vec<Self>) {
+    pub fn merge(&mut self, others: &Vec<Team>) {
         for other in others {
             for (v1, v2) in self.data.iter_mut().zip(other.data()) {
                 v1.extend(v2);
@@ -276,6 +276,9 @@ impl KeamsTask {
     }
     pub fn points_team(&self) -> &Team {
         &self.points_team
+    }
+    pub fn merge_team(&mut self, others: &Vec<Team>) {
+        self.points_team.merge(others)
     }
     pub fn step(&self) -> usize {
         self.step
