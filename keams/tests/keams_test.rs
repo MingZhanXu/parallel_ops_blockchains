@@ -183,6 +183,48 @@ mod tests {
         assert_eq!(ans1, *team1.data());
     }
     
+    #[test]
+    /// 測試 center 合併
+    fn merge_cneter() {
+        let ans = vec![
+            Some(Point::new(0.0, -0.0)),
+            Some(Point::new(1.0, -1.0)),
+            Some(Point::new(2.0, -2.0)),
+            Some(Point::new(3.0, -3.0)),
+            Some(Point::new(4.0, -4.0)),
+            Some(Point::new(5.0, -5.0)),
+            Some(Point::new(6.0, -6.0)),
+            Some(Point::new(7.0, -7.0)),
+            Some(Point::new(8.0, -8.0)),
+        ];
+        let mut center1 = Center::new(vec![
+            ans[0].clone(),
+            ans[1].clone(),
+            ans[2].clone(),
+            None, None, None,
+            None, None, None,
+        ]);
+        let center2 = Center::new(vec![
+            None, None, None,
+            ans[3].clone(),
+            ans[4].clone(),
+            ans[5].clone(),
+            None, None, None,
+        ]);
+        let center3 = Center::new(vec![
+            None, None, None,
+            None, None, None,
+            ans[6].clone(),
+            ans[7].clone(),
+            ans[8].clone(),
+        ]);
+        match center1.merge(vec![center2, center3]) {
+            Ok(()) => {
+                assert_eq!(ans, *center1.centers());
+            }
+            Err(err) => panic!("不該錯誤，錯誤資訊: {}", err),
+        }
+    }
 
     #[test]
     /// 測試新建是否成功

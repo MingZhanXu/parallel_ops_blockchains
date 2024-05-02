@@ -170,6 +170,50 @@ impl PartialEq for Team {
     }
 }
 impl Eq for Team {}
+
+pub struct Center {
+    len: usize,
+    center: Vec<Option<Point>>,
+}
+impl Center {
+    pub fn new(center: Vec<Option<Point>>) -> Center{
+        Center {
+            len: center.len(),
+            center
+        }
+    }
+    pub fn truncate(&mut self) {
+        self.center.truncate(self.len);
+    }
+    pub fn centers(&self) -> &Vec<Option<Point>> {
+        &self.center
+    }
+    pub fn center(&self, index: usize) -> &Option<Point> {
+        &self.center[index]
+    }
+    pub fn mut_center(&mut self, index: usize) -> &mut Option<Point> {
+        &mut self.center[index]
+    }
+    pub fn merge(&mut self, others: Vec<Center>) -> Result<(), Error> {
+        for center in others {
+            for (i, p) in center.centers().iter().enumerate() {
+                match p {
+                    Some(p) => {
+                        if let None = self.center(i) {
+                            *self.mut_center(i) = Some(p.clone());
+                        } else {
+                            let err_msg = 
+                                format!("Point 重複(self.point = {:?}, other.point = {:?})", self.center(i), p);
+                            return Err(Error::KeamsError(err_msg));
+                        }
+                    },
+                    None => continue
+                }
+            }
+        }
+        Ok(())
+    }
+}
 pub struct KeamsTask {
     user_id: usize,
     user_max: usize,
